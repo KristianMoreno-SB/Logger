@@ -19,7 +19,7 @@ begin
     l_req_privs('CREATE TRIGGER')       := 1;
     l_req_privs('CREATE ANY CONTEXT')   := 1;
     l_req_privs('CREATE JOB')           := 1;
-
+	l_req_privs('CREATE SYNONYM')       := 1;
 
     for c1 in (select privilege from session_privs)
     loop
@@ -34,20 +34,20 @@ begin
         begin
             l_dummy := l_sess_privs(l_priv);
         exception when no_data_found then
-            dbms_output.put_line('Error, the current schema is missing the following privilege: '||l_priv);
+            dbms_output.put_line('Error, el esquema actual no cuenta con los siguiente privilegios: '||l_priv);
             l_priv_error := true;
         end;
         l_priv := l_req_privs.next(l_priv);
     end loop;
     
     if not l_priv_error then
-        dbms_output.put_line('User has all required privileges, installation will continue.');
+        dbms_output.put_line('El Usuario cuenta con todos los privilegios necesarios la instalacion puede continuar.');
     end if;
     
     dbms_output.put_line('_____________________________________________________________________________');
 
     if l_priv_error then
-      raise_application_error (-20000, 'One or more required privileges are missing.');
+      raise_application_error (-20000, 'Faltan uno o mas de los privilegios necesarios para la instalacion.');
     end if;
 end;
 /
