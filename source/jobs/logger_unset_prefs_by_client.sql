@@ -1,6 +1,6 @@
 declare
   l_count pls_integer;
-  l_job_name user_scheduler_jobs.job_name%type := 'LOGGER_UNSET_PREFS_BY_CLIENT';
+  l_job_name user_scheduler_jobs.job_name%type := 'LOGGER_ERROR_UNSET_PREFS_BY_CLIENT';
 begin
   
   select count(1)
@@ -16,7 +16,7 @@ begin
        start_date => systimestamp,
        repeat_interval => 'FREQ=HOURLY; BYHOUR=1',
        enabled => TRUE,
-       comments => 'Clears logger prefs by client_id');
+       comments => 'Limpia las preferencias de Logger por Client_id');
   end if;
 end;
 /

@@ -1,6 +1,6 @@
 declare
   l_count pls_integer;
-  l_job_name user_scheduler_jobs.job_name%type := 'LOGGER_PURGE_JOB';
+  l_job_name user_scheduler_jobs.job_name%type := 'LOGGER_ERROR_PURGE_JOB';
 begin
   
   select count(1)
@@ -16,7 +16,7 @@ begin
        start_date => systimestamp,
        repeat_interval => 'FREQ=DAILY; BYHOUR=1',
        enabled => TRUE,
-       comments => 'Purges LOGGER_LOGS using default values defined in logger_prefs.');
+       comments => 'Purges LOGGER_ERROR_LOGS utilizando valores por defecto definidos en logger_prefs.');
   end if;
 end;
 /

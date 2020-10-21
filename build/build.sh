@@ -15,10 +15,10 @@ if [ -z "${VERSION_NUMBER}" ]; then
   echo "VERSION_NUMBER (parameter 1) is not defined"
   exit 0
 fi
-if [ -z "${SQL_CONNECTION}" ]; then
-	echo "SQL_CONNECTION (parameter 2) is not defined"
-	exit 0
-fi
+#if [ -z "${SQL_CONNECTION}" ]; then
+#	echo "SQL_CONNECTION (parameter 2) is not defined"
+#	exit 0
+#fi
 
 #91: Allow option to include release folder or not. Useful for developers, but should be excluded by default
 #Upper value
@@ -34,8 +34,8 @@ echo "Building release $VERSION_NUMBER"
 
 #Generate no_op code
 START_DIR="$PWD"
-cd ../source/packages
-sqlplus $SQL_CONNECTION @../gen_no_op.sql
+#cd ../source/packages
+#sqlplus $SQL_CONNECTION @../gen_no_op.sql
 cd $START_DIR
 
 
