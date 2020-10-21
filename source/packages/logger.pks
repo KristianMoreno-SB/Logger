@@ -74,7 +74,7 @@ as
 
   -- #127
   -- Note to developers: This is only for internal Logger code. Do not use this as part of your code.
-  g_pref_type_logger constant logger_prefs.pref_type%type := 'LOGGER'; -- If this changes need to modify logger_prefs.sql as it has a dependancy.
+  g_pref_type_logger constant logger_prefs.pref_type%type := 'LOGGER_ERRORS'; -- If this changes need to modify logger_prefs.sql as it has a dependancy.
 
   -- Expose private functions only for testing during development
   $if $$logger_debug $then
