@@ -2,9 +2,9 @@ declare
 	-- the following line is also used in a constant declaration in logger.pkb
 	l_ctx_name varchar2(35) := substr(sys_context('USERENV','CURRENT_SCHEMA'),1,23)||'_LOGCTX';
 begin
-	execute immediate 'create or replace context '||l_ctx_name||' using logger accessed globally';
+	execute immediate 'create or replace context '||l_ctx_name||' using logger_error accessed globally';
 
-	merge into logger_prefs p
+	merge into logger_error_prefs p
 	using (select 'GLOBAL_CONTEXT_NAME' pref_name, l_ctx_name pref_value, logger.g_pref_type_logger pref_type from dual) d
 		on (1=1
 			and p.pref_type = d.pref_type
