@@ -41,8 +41,8 @@ cd $START_DIR
 
 #*** VARIABLES ***
 RELEASE_FOLDER=../releases/$VERSION_NUMBER
-INSTALL=$RELEASE_FOLDER/"logger_install.sql"
-NO_OP=$RELEASE_FOLDER/"logger_no_op.sql"
+INSTALL=$RELEASE_FOLDER/"logger_error_install.sql"
+NO_OP=$RELEASE_FOLDER/"logger_error_no_op.sql"
 
 
 #Clear release folder (if it exists) and make directory
@@ -57,7 +57,7 @@ mkdir ../releases/$VERSION_NUMBER
 #rm -f ../build/logger_no_op.sql
 
 #PREINSTALL
-cat ../source/install/logger_install_prereqs.sql > $INSTALL
+cat ../source/install/logger_error_install_prereqs.sql > $INSTALL
 printf '\n' >> $INSTALL
 
 #NO OP Code
@@ -72,44 +72,44 @@ printf "alter session set plsql_ccflags='logger_no_op_install:true' \n/ \n\n\n" 
 
 #78: Need to build tables for no_op to reference
 #TABLES - Output for both regular and NO_OP
-printf 'PROMPT tables/logger_logs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_logs.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/logger_error_logs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/logger_error_logs.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_prefs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_prefs.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/logger_error_prefs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/logger_error_prefs.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_logs_apex_items.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_logs_apex_items.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/logger_error_logs_apex_items.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/logger_error_logs_apex_items.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_prefs_by_client_id.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_prefs_by_client_id.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/logger_error_prefs_by_client_id.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/logger_error_prefs_by_client_id.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #JOBS
-printf 'PROMPT jobs/logger_purge_job.sql \n' >> $INSTALL
-cat ../source/jobs/logger_purge_job.sql >> $INSTALL
+printf 'PROMPT jobs/logger_error_purge_job.sql \n' >> $INSTALL
+cat ../source/jobs/logger_error_purge_job.sql >> $INSTALL
 printf '\n' >> $INSTALL
-printf 'PROMPT jobs/logger_unset_prefs_by_client.sql \n' >> $INSTALL
-cat ../source/jobs/logger_unset_prefs_by_client.sql >> $INSTALL
+printf 'PROMPT jobs/logger_error_unset_prefs_by_client.sql \n' >> $INSTALL
+cat ../source/jobs/logger_error_unset_prefs_by_client.sql >> $INSTALL
 printf '\n' >> $INSTALL
 
 #VIEWS - Output for both regular and NO_OP
-printf 'PROMPT views/logger_logs_5_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_logs_5_min.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/logger_error_logs_5_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/logger_error_logs_5_min.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT views/logger_logs_60_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_logs_60_min.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/logger_error_logs_60_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/logger_error_logs_60_min.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT views/logger_logs_terse.sql\n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_logs_terse.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/logger_error_logs_terse.sql\n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/logger_error_logs_terse.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #PACKAGES
-printf 'PROMPT packages/logger.pks \n' >> $INSTALL
-cat ../source/packages/logger.pks >> $INSTALL
+printf 'PROMPT packages/logger_error.pks \n' >> $INSTALL
+cat ../source/packages/logger_error.pks >> $INSTALL
 printf '\n' >> $INSTALL
-printf 'PROMPT packages/logger.pkb \n' >> $INSTALL
-cat ../source/packages/logger.pkb >> $INSTALL
+printf 'PROMPT packages/logger_error.pkb \n' >> $INSTALL
+cat ../source/packages/logger_error.pkb >> $INSTALL
 printf '\n' >> $INSTALL
 
 
@@ -118,13 +118,13 @@ printf 'PROMPT Recompile biu_logger_prefs after logger.pkb \n' >> $INSTALL
 printf '\nalter trigger biu_logger_prefs compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #CONTEXTS
-printf 'PROMPT contexts/logger_context.sql \n' >> $INSTALL
-cat ../source/contexts/logger_context.sql >> $INSTALL
+printf 'PROMPT contexts/logger_error_context.sql \n' >> $INSTALL
+cat ../source/contexts/logger_error_context.sql >> $INSTALL
 printf '\n' >> $INSTALL
 
 #PROCEDURES
-printf 'PROMPT procedures/logger_configure.plb \n' >> $INSTALL
-cat ../source/procedures/logger_configure.plb >> $INSTALL
+printf 'PROMPT procedures/logger_error_configure.plb \n' >> $INSTALL
+cat ../source/procedures/logger_error_configure.plb >> $INSTALL
 printf '\n' >> $INSTALL
 
 
@@ -136,10 +136,10 @@ printf '\n' >> $INSTALL
 
 
 #NO OP Code
-printf '\n\nprompt *** logger.pks *** \n\n' >> $NO_OP
-cat ../source/packages/logger.pks >> $NO_OP
-printf '\n\nprompt *** logger.pkb *** \n\n' >> $NO_OP
-cat ../source/packages/logger_no_op.pkb >> $NO_OP
+printf '\n\nprompt *** logger_error.pks *** \n\n' >> $NO_OP
+cat ../source/packages/logger_error.pks >> $NO_OP
+printf '\n\nprompt *** logger_error.pkb *** \n\n' >> $NO_OP
+cat ../source/packages/logger_error_no_op.pkb >> $NO_OP
 printf '\n\nprompt\n' >> $NO_OP
 printf 'prompt *************************************************\n' >> $NO_OP
 printf 'prompt Now executing LOGGER.STATUS...\n' >> $NO_OP
@@ -151,7 +151,7 @@ printf '\n\n' >> $NO_OP
 
 
 #Recompile logger_logs_terse since it depends on logger
-printf '\nalter view logger_logs_terse compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
+printf '\nalter view logger_error_logs_terse compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #Copy "other" scripts
 cp -f ../source/install/create_user.sql $RELEASE_FOLDER
@@ -161,7 +161,7 @@ cp -f ../source/install/drop_logger.sql $RELEASE_FOLDER
 cp -r ../source/scripts $RELEASE_FOLDER
 
 #Copy main package file for developers to easily review
-cp -f ../source/packages/logger.* $RELEASE_FOLDER
+cp -f ../source/packages/logger_error.* $RELEASE_FOLDER
 
 #Copy README
 cp -f ../README.md $RELEASE_FOLDER
