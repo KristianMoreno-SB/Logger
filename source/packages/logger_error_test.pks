@@ -1,4 +1,4 @@
-create or replace package logger_test
+create or replace package logger_error_test
 as
 
   type rec_error is record(
@@ -7,7 +7,7 @@ as
 
   type tab_error is table of rec_error index by binary_integer;
 
-  g_errors logger_test.tab_error;
+  g_errors logger_error_test.tab_error;
 
   procedure util_run_tests;
 

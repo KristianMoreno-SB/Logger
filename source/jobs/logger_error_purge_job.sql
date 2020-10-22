@@ -16,7 +16,7 @@ begin
        start_date => systimestamp,
        repeat_interval => 'FREQ=DAILY; BYHOUR=1',
        enabled => TRUE,
-       comments => 'Purges LOGGER_ERROR_LOGS utilizando valores por defecto definidos en logger_prefs.');
+       comments => 'Purges LOGGER_ERROR_LOGS utilizando valores por defecto definidos en logger_error_prefs.');
   end if;
 end;
 /

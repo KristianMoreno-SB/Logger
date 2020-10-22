@@ -1,10 +1,10 @@
-create or replace package body logger_test
+create or replace package body logger_error_test
 as
 
   -- CONTANTS
-  gc_line_feed constant varchar2(1) := chr(10);
-  gc_unknown_err constant varchar2(50) := 'Unknown error';
-  gc_client_id constant varchar2(30) := 'test_client_id'; -- Consistent client id to use
+  gc_error_line_feed constant varchar2(1) := chr(10);
+  gc_error_unknown_err constant varchar2(50) := 'Unknown error';
+  gc_error_client_id constant varchar2(30) := 'test_client_id'; -- Consistent client id to use
 
 
   -- GLOBAL VARIABLES
@@ -54,10 +54,10 @@ as
     dbms_session.set_identifier(null);
 
     -- Reset all contexts
-    logger.null_global_contexts;
+    logger_error.null_global_contexts;
 
     -- Reset timers
-    logger.time_reset;
+    logger_error.time_reset;
   end util_test_setup;
 
 
@@ -96,7 +96,7 @@ as
     dbms_session.set_identifier(null);
 
     -- Reset timers
-    logger.time_reset;
+    logger_error.time_reset;
   end util_test_teardown;
 
 
@@ -164,11 +164,11 @@ as
   begin
     g_proc_name := 'is_number';
 
-    if logger.is_number(p_str => 'a') then
+    if logger_error.is_number(p_str => 'a') then
       util_add_error('not failing on letter');
     end if;
 
-    if not logger.is_number(p_str => '1') then
+    if not logger_error.is_number(p_str => '1') then
       util_add_error('not failing on number');
     end if;
   end is_number;
@@ -182,7 +182,7 @@ as
     g_proc_name := 'assert';
 
     begin
-      logger.assert(1=1, 'message');
+      logger_error.assert(1=1, 'message');
     exception
       when others then
         util_add_error('1=1 is failing when it shouldnt be');
@@ -190,7 +190,7 @@ as
 
     -- Fail on purpose to ensure error is raised
     begin
-      logger.assert(1=2, 'message');
+      logger_error.assert(1=2, 'message');
 
       -- If assert works, should never get to this point
       util_add_error('1=2 is not failing when it should');
@@ -206,17 +206,17 @@ as
 
   procedure get_param_clob
   as
-    l_params logger.tab_param;
+    l_params logger_error.tab_param;
     l_clob clob;
   begin
     g_proc_name := 'get_param_clob';
 
-    logger.append_param(l_params, 'p_test1', 'test1');
-    logger.append_param(l_params, 'p_test2', 'test2');
+    logger_error.append_param(l_params, 'p_test1', 'test1');
+    logger_error.append_param(l_params, 'p_test2', 'test2');
 
-    l_clob := logger.get_param_clob(p_params => l_params);
+    l_clob := logger_error.get_param_clob(p_params => l_params);
 
-    if l_clob != 'p_test1: test1' || gc_line_feed || 'p_test2: test2' then
+    if l_clob != 'p_test1: test1' || gc_error_line_feed || 'p_test2: test2' then
       util_add_error('Not displaying correctly');
     end if;
   end get_param_clob;
@@ -229,23 +229,23 @@ as
 
     -- Reset client_id
     dbms_session.set_identifier(null);
-    logger.save_global_context(
+    logger_error.save_global_context(
       p_attribute => 'TEST',
       p_value => 'test_value',
       p_client_id => null);
 
-    if sys_context(logger.g_context_name, 'TEST') != 'test_value' then
+    if sys_context(logger_error.g_context_name, 'TEST') != 'test_value' then
       util_add_error('Context not setting (globally);');
     end if;
 
     -- Test for client_id
-    dbms_session.set_identifier(gc_client_id);
-    logger.save_global_context(
+    dbms_session.set_identifier(gc_error_client_id);
+    logger_error.save_global_context(
       p_attribute => 'TEST',
       p_value => 'test_client_id',
-      p_client_id => gc_client_id);
+      p_client_id => gc_error_client_id);
 
-    if sys_context(logger.g_context_name, 'TEST') != 'test_client_id' then
+    if sys_context(logger_error.g_context_name, 'TEST') != 'test_client_id' then
       util_add_error('Context not setting (client_id);');
     end if;
   end save_global_context;
@@ -254,13 +254,13 @@ as
   as
     l_clob logger_logs.extra%type;
     l_return logger_logs.extra%type;
-    l_params logger.tab_param;
+    l_params logger_error.tab_param;
   begin
     g_proc_name := 'set_extra_with_params';
 
     -- Test empty params
     l_clob := 'test';
-    l_return := logger.set_extra_with_params(
+    l_return := logger_error.set_extra_with_params(
       p_extra => l_clob,
       p_params => l_params);
 
@@ -269,8 +269,8 @@ as
     end if;
 
     -- Test one param
-    logger.append_param(l_params, 'p_test1', 'test1');
-    l_return := logger.set_extra_with_params(
+    logger_error.append_param(l_params, 'p_test1', 'test1');
+    l_return := logger_error.set_extra_with_params(
       p_extra => l_clob,
       p_params => l_params);
 
@@ -284,8 +284,8 @@ p_test1: test1' then
     end if;
 
     -- Test 2 params
-    logger.append_param(l_params, 'p_test2', 'test2');
-    l_return := logger.set_extra_with_params(
+    logger_error.append_param(l_params, 'p_test2', 'test2');
+    l_return := logger_error.set_extra_with_params(
       p_extra => l_clob,
       p_params => l_params);
 
@@ -308,7 +308,7 @@ p_test2: test2' then
   begin
     g_proc_name := 'get_sys_context';
 
-    l_clob := logger.get_sys_context(
+    l_clob := logger_error.get_sys_context(
       p_detail_level => 'USER',
       p_vertical => false,
       p_show_null => true);
@@ -316,7 +316,7 @@ p_test2: test2' then
 
   exception
     when others then
-      util_add_error(gc_unknown_err);
+      util_add_error(gc_error_unknown_err);
   end get_sys_context;
 
 
@@ -330,10 +330,10 @@ p_test2: test2' then
     update logger_prefs
     set pref_value = 'FALSE'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'PROTECT_ADMIN_PROCS';
 
-    l_bool := logger.admin_security_check;
+    l_bool := logger_error.admin_security_check;
 
     if not l_bool then
       util_add_error('FALSE failing');
@@ -343,16 +343,16 @@ p_test2: test2' then
     update logger_prefs
     set pref_value = 'TRUE'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'PROTECT_ADMIN_PROCS';
 
     update logger_prefs
     set pref_value = sys_context('USERENV','SESSION_USER')
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'INSTALL_SCHEMA';
 
-    l_bool := logger.admin_security_check;
+    l_bool := logger_error.admin_security_check;
 
     if not l_bool then
       util_add_error('Failing when set to true and user is same as INSTALL_SCHEMA');
@@ -362,12 +362,12 @@ p_test2: test2' then
     update logger_prefs
     set pref_value = 'DUMMY'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'INSTALL_SCHEMA';
 
     begin
       -- This should raise an exception
-      l_bool := logger.admin_security_check;
+      l_bool := logger_error.admin_security_check;
 
       -- If got to this point then issue
       util_add_error('TRUE failing when different schema (not raising exception)');
@@ -390,24 +390,24 @@ p_test2: test2' then
     update logger_prefs
     set pref_value = 'DEBUG'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'LEVEL';
 
-    l_level := logger.get_level_number;
+    l_level := logger_error.get_level_number;
 
-    if l_level != logger.g_debug then
+    if l_level != logger_error.g_debug then
       util_add_error('Level number not matching');
     end if;
 
     -- Client level Test
-    dbms_session.set_identifier(gc_client_id);
-    logger.set_level(
-      p_level => logger.g_error,
+    dbms_session.set_identifier(gc_error_client_id);
+    logger_error.set_level(
+      p_level => logger_error.g_error,
       p_client_id => sys_context('userenv','client_identifier')
     );
-    l_level := logger.get_level_number;
+    l_level := logger_error.get_level_number;
 
-    if l_level != logger.g_error then
+    if l_level != logger_error.g_error then
       util_add_error('Invalid clientid level');
     end if;
   end get_level_number;
@@ -421,35 +421,35 @@ p_test2: test2' then
     update logger_prefs
     set pref_value = 'TRUE'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'INCLUDE_CALL_STACK';
 
-    if not logger.include_call_stack then
+    if not logger_error.include_call_stack then
       util_add_error('Faling on true');
     end if;
 
     update logger_prefs
     set pref_value = 'FALSE'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'INCLUDE_CALL_STACK';
 
-    -- reset contexts so that it looks at new one (could have called Logger.configure but more than what I need here)
-    logger.null_global_contexts;
+    -- reset contexts so that it looks at new one (could have called logger_error.configure but more than what I need here)
+    logger_error.null_global_contexts;
 
-    if logger.include_call_stack then
+    if logger_error.include_call_stack then
       util_add_error('Faling on false');
     end if;
 
     -- Test with client
-    dbms_session.set_identifier(gc_client_id);
-    logger.set_level(
-      p_level => logger.g_debug,
-      p_client_id => gc_client_id,
+    dbms_session.set_identifier(gc_error_client_id);
+    logger_error.set_level(
+      p_level => logger_error.g_debug,
+      p_client_id => gc_error_client_id,
       p_include_call_stack => 'TRUE'
     );
 
-    if not logger.include_call_stack then
+    if not logger_error.include_call_stack then
       util_add_error('Faling on true (client_id)');
     end if;
 
@@ -466,7 +466,7 @@ p_test2: test2' then
     -- Test Seconds
     l_start := to_date('10-Jan-2015 20:40:10', 'DD-MON-YYYY HH24:MI:SS');
     l_stop := to_date('10-Jan-2015 20:40:20', 'DD-MON-YYYY HH24:MI:SS');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '10 seconds ago' then
       util_add_error('Error with seconds');
@@ -475,7 +475,7 @@ p_test2: test2' then
     -- Test Minutes
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('10-Jan-2015 20:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '10 minutes ago' then
       util_add_error('Error with minutes');
@@ -484,7 +484,7 @@ p_test2: test2' then
     -- Test Hours (and that it's 1 hour not 1 hours)
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('10-Jan-2015 21:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '1 hour ago' then
       util_add_error('Error with hours');
@@ -493,7 +493,7 @@ p_test2: test2' then
     -- Test Days
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('12-Jan-2015 20:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '2 days ago' then
       util_add_error('Error with days');
@@ -502,7 +502,7 @@ p_test2: test2' then
     -- Test Weeks
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('30-Jan-2015 20:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '2 weeks ago' then
       util_add_error('Error with weeks');
@@ -511,7 +511,7 @@ p_test2: test2' then
     -- Test Months
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('11-Mar-2015 20:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '2 months ago' then
       util_add_error('Error with months');
@@ -520,7 +520,7 @@ p_test2: test2' then
     -- Test Years
     l_start := to_date('10-Jan-2015 20:30', 'DD-MON-YYYY HH24:MI');
     l_stop := to_date('11-Mar-2016 20:40', 'DD-MON-YYYY HH24:MI');
-    if logger.date_text_format_base (
+    if logger_error.date_text_format_base (
         p_date_start => l_start,
         p_date_stop => l_stop) != '1.2 years ago' then
       util_add_error('Error with years');
@@ -535,23 +535,23 @@ p_test2: test2' then
 
   procedure log_internal
   as
-    l_params logger.tab_param;
+    l_params logger_error.tab_param;
     l_scope logger_logs.scope%type;
     l_row logger_logs_5_min%rowtype;
 
   begin
     g_proc_name := 'log_internal';
 
-    logger.append_param(l_params, 'p_test1', 'test1');
+    logger_error.append_param(l_params, 'p_test1', 'test1');
 
     -- Set the level to error then log at debug.
     -- Should still register since log_internal doesn't check ok_to_log (which is as expected)
-    logger.set_level(p_level => logger.g_error);
+    logger_error.set_level(p_level => logger_error.g_error);
 
     l_scope := util_get_unique_scope;
-    logger.log_internal(
+    logger_error.log_internal(
       p_text => 'test',
-      p_log_level => logger.g_debug,
+      p_log_level => logger_error.g_debug,
       p_scope => l_scope,
       p_extra => 'extra',
       p_callstack => null,
@@ -567,7 +567,7 @@ p_test2: test2' then
       util_add_error('text failed');
     end if;
 
-    if l_row.logger_level != logger.g_debug then
+    if l_row.logger_level != logger_error.g_debug then
       util_add_error('Level failed');
     end if;
 
@@ -596,12 +596,12 @@ p_test1: test1' then
     g_proc_name := 'null_global_contexts';
 
     -- Null values
-    logger.null_global_contexts;
+    logger_error.null_global_contexts;
 
     if 1=2
-      or sys_context(logger.g_context_name,'level') is not null
-      or sys_context(logger.g_context_name,'include_call_stack') is not null
-      or sys_context(logger.g_context_name,'plugin_fn_error') is not null
+      or sys_context(logger_error.g_context_name,'level') is not null
+      or sys_context(logger_error.g_context_name,'include_call_stack') is not null
+      or sys_context(logger_error.g_context_name,'plugin_fn_error') is not null
       then
       util_add_error('Contexts still contain values when they shouldnt');
     end if;
@@ -615,7 +615,7 @@ p_test1: test1' then
   begin
     g_proc_name := 'convert_level_char_to_num';
 
-    if logger.convert_level_char_to_num(p_level => logger.g_error_name) != logger.g_error then
+    if logger_error.convert_level_char_to_num(p_level => logger_error.g_error_name) != logger_error.g_error then
       util_add_error('Not converting properly');
     end if;
   end convert_level_char_to_num;
@@ -626,7 +626,7 @@ p_test1: test1' then
   begin
     g_proc_name := 'convert_level_num_to_char';
 
-    if logger.convert_level_num_to_char(p_level => logger.g_information) != logger.g_information_name then
+    if logger_error.convert_level_num_to_char(p_level => logger_error.g_information) != logger_error.g_information_name then
       util_add_error('Not converting properly');
     end if;
   end convert_level_num_to_char;
@@ -638,7 +638,7 @@ p_test1: test1' then
   begin
     g_proc_name := 'get_character_codes';
 
-    l_temp := logger.get_character_codes(
+    l_temp := logger_error.get_character_codes(
   		p_string =>
 'Test
 new line',
@@ -650,7 +650,7 @@ new line',
       util_add_error('Failed on show common codes false');
     end if;
 
-    l_temp := logger.get_character_codes(
+    l_temp := logger_error.get_character_codes(
   		p_string =>
 'Test
 new line',
@@ -679,31 +679,31 @@ new line',
     for i in test_type.first .. test_type.last loop
       -- for client reset global to debug then set client to error
       if test_type(i) = 'global' then
-        logger.set_level(p_level => logger.g_error);
+        logger_error.set_level(p_level => logger_error.g_error);
       else
         -- Client
         -- Reset global level
-        logger.set_level(p_level => logger.g_debug);
+        logger_error.set_level(p_level => logger_error.g_debug);
 
-        dbms_session.set_identifier(gc_client_id);
-        logger.set_level(
-          p_level => logger.g_error,
-          p_client_id => gc_client_id);
+        dbms_session.set_identifier(gc_error_client_id);
+        logger_error.set_level(
+          p_level => logger_error.g_error,
+          p_client_id => gc_error_client_id);
       end if;
 
       -- Tests
       -- Should be false since lower
-      if logger.ok_to_log(p_level => logger.g_debug) then
+      if logger_error.ok_to_log(p_level => logger_error.g_debug) then
         util_add_error('not registering lower levels. Test Type: ' || test_type(i));
       end if;
 
       -- Should be true
-      if not logger.ok_to_log(p_level => logger.g_error) then
+      if not logger_error.ok_to_log(p_level => logger_error.g_error) then
         util_add_error('failing when same level. Test Type: ' || test_type(i));
       end if;
 
       -- Should be true
-      if not logger.ok_to_log(p_level => logger.g_permanent) then
+      if not logger_error.ok_to_log(p_level => logger_error.g_permanent) then
         util_add_error('failing when higher level. Test Type: ' || test_type(i));
       end if;
 
@@ -726,8 +726,8 @@ new line',
     g_proc_name := 'log_error';
 
     -- Should not log
-    logger.set_level(p_level => logger.g_permanent);
-    logger.log_error('test', l_scope);
+    logger_error.set_level(p_level => logger_error.g_permanent);
+    logger_error.log_error('test', l_scope);
 
     select count(1)
     into l_count
@@ -740,18 +740,18 @@ new line',
     end if;
 
 
-    logger.set_level(p_level => logger.g_debug);
-    logger.log_error('test', l_scope);
+    logger_error.set_level(p_level => logger_error.g_debug);
+    logger_error.log_error('test', l_scope);
 
     -- Reset callstack context and set pref to false to ensure that callstack is still set even though this setting is false
     update logger_prefs
     set pref_value = 'FALSE'
     where 1=1
-      and pref_type = logger.g_pref_type_logger
+      and pref_type = logger_error.g_pref_type_logger
       and pref_name = 'INCLUDE_CALL_STACK';
 
     -- Wipe the sys context so that it reloads
-    logger.save_global_context(
+    logger_error.save_global_context(
       p_attribute => 'include_call_stack',
       p_value => null);
 
@@ -811,10 +811,10 @@ new line',
   begin
 
 
-    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_permanent', logger.g_off, logger.g_permanent, logger.g_debug);
-    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_warning', logger.g_error, logger.g_warning, logger.g_debug);
-    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_information', logger.g_warning, logger.g_information, logger.g_debug);
-    l_log_fns(l_log_fns.count + 1) := get_log_fn('log', logger.g_warning, logger.g_debug, logger.g_debug);
+    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_permanent', logger_error.g_off, logger_error.g_permanent, logger_error.g_debug);
+    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_warning', logger_error.g_error, logger_error.g_warning, logger_error.g_debug);
+    l_log_fns(l_log_fns.count + 1) := get_log_fn('log_information', logger_error.g_warning, logger_error.g_information, logger_error.g_debug);
+    l_log_fns(l_log_fns.count + 1) := get_log_fn('log', logger_error.g_warning, logger_error.g_debug, logger_error.g_debug);
 
     for i in l_log_fns.first .. l_log_fns.last loop
       g_proc_name := l_log_fns(i).fn_name;
@@ -827,17 +827,17 @@ new line',
 
         if x.action = 'off' then
           -- Test off
-          logger.set_level(l_log_fns(i).level_off);
+          logger_error.set_level(l_log_fns(i).level_off);
         elsif x.action = 'self' then
           -- Test self
-          logger.set_level(l_log_fns(i).level_self);
+          logger_error.set_level(l_log_fns(i).level_self);
         elsif x.action = 'on' then
           -- Test on
-          logger.set_level(l_log_fns(i).level_on);
+          logger_error.set_level(l_log_fns(i).level_on);
         end if;
 
         l_scope := util_get_unique_scope;
-        l_sql := 'begin logger.' || l_log_fns(i).fn_name || q'!('test', :scope); end;!';
+        l_sql := 'begin logger_error.' || l_log_fns(i).fn_name || q'!('test', :scope); end;!';
         execute immediate l_sql using l_scope;
 
         select count(1)
@@ -875,9 +875,9 @@ new line',
   begin
     g_proc_name := 'time_start';
 
-    logger.set_level(logger.g_timing);
+    logger_error.set_level(logger_error.g_timing);
 
-    logger.time_start(
+    logger_error.time_start(
       p_unit => l_unit_name,
       p_log_in_table => true
     );
@@ -904,16 +904,16 @@ new line',
   begin
     g_proc_name := 'time_stop';
 
-    logger.set_level(logger.g_debug); -- Time stop only requires g_debug
+    logger_error.set_level(logger_error.g_debug); -- Time stop only requires g_debug
 
-    logger.time_start(
+    logger_error.time_start(
       p_unit => l_unit_name,
       p_log_in_table => false
     );
 
     apex_util.pause(l_sleep_time + 0.1);
 
-    logger.time_stop(
+    logger_error.time_stop(
       p_unit => l_unit_name,
       p_scope => l_scope
     );
@@ -940,16 +940,16 @@ new line',
   begin
     g_proc_name := 'time_stop (function)';
 
-    logger.set_level(logger.g_debug);
+    logger_error.set_level(logger_error.g_debug);
 
-    logger.time_start(
+    logger_error.time_start(
       p_unit => l_unit_name,
       p_log_in_table => false
     );
 
     apex_util.pause(l_sleep_time + 0.1);
 
-    l_text := logger.time_stop(p_unit => l_unit_name);
+    l_text := logger_error.time_stop(p_unit => l_unit_name);
 
     if l_text is null or l_text not like '00:00:0' || l_sleep_time || '%' then
       util_add_error('Issue with return: ' || l_text);
@@ -966,16 +966,16 @@ new line',
   begin
     g_proc_name := 'time_stop_seconds';
 
-    logger.set_level(logger.g_debug);
+    logger_error.set_level(logger_error.g_debug);
 
-    logger.time_start(
+    logger_error.time_start(
       p_unit => l_unit_name,
       p_log_in_table => false
     );
 
     apex_util.pause(l_sleep_time + 0.05);
 
-    l_text := logger.time_stop_seconds(p_unit => l_unit_name);
+    l_text := logger_error.time_stop_seconds(p_unit => l_unit_name);
 
     if l_text is null or l_text not like l_sleep_time || '.0%' then
       util_add_error('Issue with return: ' || l_text);
@@ -992,19 +992,19 @@ new line',
   begin
     g_proc_name := 'get_pref';
 
-    logger.set_level(p_level => logger.g_debug);
+    logger_error.set_level(p_level => logger_error.g_debug);
 
-    l_pref := nvl(logger.get_pref('LEVEL'), 'a');
-    if l_pref != logger.g_debug_name then
+    l_pref := nvl(logger_error.get_pref('LEVEL'), 'a');
+    if l_pref != logger_error.g_debug_name then
       util_add_error('Global level not fetching correctly');
     end if;
 
-    dbms_session.set_identifier(gc_client_id);
-    logger.set_level(
-      p_level => logger.g_warning,
-      p_client_id => gc_client_id);
-    l_pref := nvl(logger.get_pref('LEVEL'), 'a');
-    if l_pref != logger.g_warning_name then
+    dbms_session.set_identifier(gc_error_client_id);
+    logger_error.set_level(
+      p_level => logger_error.g_warning,
+      p_client_id => gc_error_client_id);
+    l_pref := nvl(logger_error.get_pref('LEVEL'), 'a');
+    if l_pref != logger_error.g_warning_name then
       util_add_error('Client pref not correct');
     end if;
 
@@ -1018,16 +1018,16 @@ new line',
   begin
     g_proc_name := 'purge_all';
 
-    logger.set_level(p_level => logger.g_debug);
-    logger.log('test');
+    logger_error.set_level(p_level => logger_error.g_debug);
+    logger_error.log('test');
 
-    logger.purge_all;
+    logger_error.purge_all;
 
     select count(1)
     into l_count
     from logger_logs
     where 1=1
-      and logger_level > logger.g_permanent;
+      and logger_level > logger_error.g_permanent;
 
     if l_count > 0 then
       util_add_error('Non permanent records being kept.');
@@ -1047,7 +1047,7 @@ new line',
     as
     begin
       l_scope := util_get_unique_scope;
-      logger.log('test', l_scope);
+      logger_error.log('test', l_scope);
 
       select count(1)
       into l_count
@@ -1058,7 +1058,7 @@ new line',
   begin
     g_proc_name := 'set_level';
 
-    logger.set_level(p_level => logger.g_debug);
+    logger_error.set_level(p_level => logger_error.g_debug);
 
 
     log_and_count;
@@ -1066,21 +1066,21 @@ new line',
       util_add_error('Not logging debug');
     end if;
 
-    logger.set_level(p_level => logger.g_error);
+    logger_error.set_level(p_level => logger_error.g_error);
     log_and_count;
     if l_count != 0 then
       util_add_error('Logging when shouldnt be');
     end if;
 
     -- Test client specific
-    dbms_session.set_identifier(gc_client_id);
+    dbms_session.set_identifier(gc_error_client_id);
 
 
     -- Disable logging globally then set on for client
-    logger.set_level(p_level => logger.g_error);
-    logger.set_level(
-      p_level => logger.g_debug,
-      p_client_id => gc_client_id,
+    logger_error.set_level(p_level => logger_error.g_error);
+    logger_error.set_level(
+      p_level => logger_error.g_debug,
+      p_client_id => gc_error_client_id,
       p_include_call_stack => 'TRUE');
 
     log_and_count;
@@ -1100,9 +1100,9 @@ new line',
 
 
     -- Test callstack off
-    logger.set_level(
-      p_level => logger.g_debug,
-      p_client_id => gc_client_id,
+    logger_error.set_level(
+      p_level => logger_error.g_debug,
+      p_client_id => gc_error_client_id,
       p_include_call_stack => 'FALSE');
 
     log_and_count;
@@ -1122,13 +1122,13 @@ new line',
     -- Testing unset_client_level here since structure is in place
     g_proc_name := 'unset_client_level';
 
-    logger.set_level(p_level => logger.g_error);
-    logger.set_level(
-      p_level => logger.g_debug,
-      p_client_id => gc_client_id,
+    logger_error.set_level(p_level => logger_error.g_error);
+    logger_error.set_level(
+      p_level => logger_error.g_debug,
+      p_client_id => gc_error_client_id,
       p_include_call_stack => 'TRUE');
 
-    logger.unset_client_level(p_client_id => gc_client_id);
+    logger_error.unset_client_level(p_client_id => gc_error_client_id);
     log_and_count;
     if l_count != 0 then
       util_add_error('unset not succesful');
@@ -1152,28 +1152,28 @@ new line',
   begin
     g_proc_name := 'tochar';
 
-    if logger.tochar(1) != '1' then
+    if logger_error.tochar(1) != '1' then
       util_add_error('number');
     end if;
 
-    l_val := logger.tochar(to_date('1-Jan-2013'));
+    l_val := logger_error.tochar(to_date('1-Jan-2013'));
     if l_val != '01-JAN-2013 00:00:00' then
       util_add_error('date: ' || l_val);
     end if;
 
-    l_val := logger.tochar(to_timestamp ('10-sep-02 14:10:10.123000', 'dd-mon-rr hh24:mi:ss.ff'));
+    l_val := logger_error.tochar(to_timestamp ('10-sep-02 14:10:10.123000', 'dd-mon-rr hh24:mi:ss.ff'));
     if l_val != '10-SEP-2002 14:10:10:123000000' then
       util_add_error('timestamp: ' || l_val);
     end if;
 
-    l_val := logger.tochar(to_timestamp_tz('1999-12-01 11:00:00 -8:00', 'yyyy-mm-dd hh:mi:ss tzh:tzm'));
+    l_val := logger_error.tochar(to_timestamp_tz('1999-12-01 11:00:00 -8:00', 'yyyy-mm-dd hh:mi:ss tzh:tzm'));
     if l_val != '01-DEC-1999 11:00:00:000000000 -08:00' then
       util_add_error('timezone: ' || l_val);
     end if;
 
     -- Local timezone based on above and is dependant on each system
 
-    l_val := logger.tochar(true) || ':' || logger.tochar(false);
+    l_val := logger_error.tochar(true) || ':' || logger_error.tochar(false);
     if l_val != 'TRUE:FALSE' then
       util_add_error('boolean: ' || l_val);
     end if;
@@ -1183,11 +1183,11 @@ new line',
 
   procedure append_param
   as
-    l_params logger.tab_param;
+    l_params logger_error.tab_param;
   begin
     g_proc_name := 'append_param';
 
-    logger.append_param(
+    logger_error.append_param(
       p_params => l_params,
       p_name => 'test',
       p_val => 'val');
