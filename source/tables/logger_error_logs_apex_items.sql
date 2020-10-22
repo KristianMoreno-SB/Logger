@@ -16,7 +16,7 @@ begin
 
   if l_count = 0 then
     execute immediate '
-create table logger_logs_apex_items(
+create table logger_error_logs_apex_items(
     id				number not null,
     log_id          number not null,
     app_session     number not null,

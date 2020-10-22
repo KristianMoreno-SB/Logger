@@ -142,9 +142,9 @@ printf '\n\nprompt *** logger_error.pkb *** \n\n' >> $NO_OP
 cat ../source/packages/logger_error_no_op.pkb >> $NO_OP
 printf '\n\nprompt\n' >> $NO_OP
 printf 'prompt *************************************************\n' >> $NO_OP
-printf 'prompt Now executing LOGGER.STATUS...\n' >> $NO_OP
+printf 'prompt Now executing LOGGER_ERROR.STATUS...\n' >> $NO_OP
 printf 'prompt ' >> $NO_OP
-printf '\nbegin \n\tlogger.status; \nend;\n/\n\n' >> $NO_OP
+printf '\nbegin \n\tlogger_error.status; \nend;\n/\n\n' >> $NO_OP
 printf 'prompt *************************************************\n' >> $NO_OP
 printf '\n\n' >> $NO_OP
 
@@ -180,8 +180,8 @@ chmod 777 $RELEASE_FOLDER/*.*
 
 
 #Replace any references for the version number
-sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger_install.sql
-sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger.pks
+sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger_error_install.sql
+sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger_error.pks
 #need to remove the backup file required for sed call
 rm -rf $RELEASE_FOLDER/*.del
 
@@ -190,10 +190,10 @@ rm -rf $RELEASE_FOLDER/*.del
 #Old windows zip7za a -tzip $/logger_$VERSION_NUMBER.zip ../build/*.sql ../build/*.html
 #By CDing into the release_folder we don't get the full path in the zip file
 cd $RELEASE_FOLDER
-zip -r logger_$VERSION_NUMBER.zip .
+zip -r logger_error_$VERSION_NUMBER.zip .
 
 #91: Copy zip to release root
-cp -f logger_$VERSION_NUMBER.zip ../.
+cp -f logger_error_$VERSION_NUMBER.zip ../.
 
 #Remove release folder if appliable
 if [ "$INCLUDE_RELEASE_FOLDER" != "Y" ]; then

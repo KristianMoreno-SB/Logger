@@ -411,9 +411,9 @@ as
     $if $$no_op $then
       l_return := true;
     $else
-      l_protect_admin_procs := get_pref(logger.gc_err_pref_protect_admin_procs);
+      l_protect_admin_procs := get_pref(logger_error.gc_err_pref_protect_admin_procs);
       if l_protect_admin_procs = 'TRUE' then
-        if get_pref(logger.gc_err_pref_install_schema) = sys_context('USERENV','SESSION_USER') then
+        if get_pref(logger_error.gc_err_pref_install_schema) = sys_context('USERENV','SESSION_USER') then
           l_return := true;
         else
           l_return := false;
@@ -466,7 +466,7 @@ as
         dbms_output.put_line(l_scope || ': selecting logger_level');
       $end
 
-      l_level := convert_level_char_to_num(logger.get_pref(logger.gc_err_pref_level));
+      l_level := convert_level_char_to_num(logger_error.get_pref(logger_error.gc_err_pref_level));
 
       return l_level;
     $end
@@ -501,12 +501,12 @@ as
       return false;
     $else
       $if $$rac_lt_11_2 $then
-        l_call_stack_pref := get_pref(logger.gc_err_pref_include_call_stack);
+        l_call_stack_pref := get_pref(logger_error.gc_err_pref_include_call_stack);
       $else
         l_call_stack_pref := sys_context(g_context_name,gc_err_ctx_attr_include_call_stack);
 
         if l_call_stack_pref is null then
-          l_call_stack_pref := get_pref(logger.gc_err_pref_include_call_stack);
+          l_call_stack_pref := get_pref(logger_error.gc_err_pref_include_call_stack);
           save_global_context(
             p_attribute => gc_err_ctx_attr_include_call_stack,
             p_value => l_call_stack_pref,
@@ -629,7 +629,7 @@ as
     p_scope in varchar2,
     p_extra in clob default null,
     p_callstack in varchar2 default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
     l_proc_name varchar2(100);
     l_lineno varchar2(100);
@@ -643,8 +643,8 @@ as
       l_text := p_text;
 
       -- Generate callstack text
-      if p_callstack is not null and logger.include_call_stack then
-        logger.get_debug_info(
+      if p_callstack is not null and logger_error.include_call_stack then
+        logger_error.get_debug_info(
           p_callstack => p_callstack,
           o_unit => l_proc_name,
           o_lineno => l_lineno);
@@ -693,7 +693,7 @@ as
     l_sql varchar2(255);
 
     -- For exception block
-    l_params logger.tab_param;
+    l_params logger_error.tab_param;
     l_scope logger_logs.scope%type;
 
     -- Mark "in_plugin" as true/false
@@ -704,7 +704,7 @@ as
     )
     as
     begin
-      if p_logger_log.logger_level = logger.g_error then
+      if p_logger_log.logger_level = logger_error.g_error then
         g_in_plugin_error := p_in_plugin;
       end if;
     end start_stop_plugin;
@@ -738,12 +738,12 @@ as
     start_stop_plugin(p_in_plugin => true);
 
     $if $$logger_debug $then
-      dbms_output.put_line('in run_plugin. g_in_plugin_error: ' || logger.tochar(g_in_plugin_error));
+      dbms_output.put_line('in run_plugin. g_in_plugin_error: ' || logger_error.tochar(g_in_plugin_error));
     $end
 
     if 1=2 then
       null;
-    elsif p_logger_log.logger_level = logger.g_error then
+    elsif p_logger_log.logger_level = logger_error.g_error then
       l_plugin_ctx := gc_err_ctx_plugin_fn_error;
     end if;
 
@@ -760,7 +760,7 @@ as
         and l_plugin_fn is not null
         and l_plugin_fn != 'NONE' then
 
-        l_sql := 'begin ' || l_plugin_fn || '(logger.get_plugin_rec(' || p_logger_log.logger_level || ')); end;';
+        l_sql := 'begin ' || l_plugin_fn || '(logger_error.get_plugin_rec(' || p_logger_log.logger_level || ')); end;';
 
         $if $$logger_debug $then
           dbms_output.put_line('l_sql: ' || l_sql);
@@ -770,20 +770,20 @@ as
 
       else
         -- Should never reach this point since plugin_fn should have a value
-        logger.log_error('Error l_plugin_fn does not have value');
+        logger_error.log_error('Error l_plugin_fn does not have value');
       end if; -- l_plugin_fn
     else
       -- Should never reach this point since plugin_ctx should have a value
-      logger.log_error('Error l_plugin_ctx does not have value');
+      logger_error.log_error('Error l_plugin_ctx does not have value');
     end if; -- l_plugin_ctx is not null
 
     start_stop_plugin(p_in_plugin => false);
 
   exception
     when others then
-      logger.append_param(l_params, 'Logger.id', p_logger_log.id);
-      logger.append_param(l_params, 'Logger.logger_level', p_logger_log.logger_level);
-      logger.append_param(l_params, 'Plugin Function', l_plugin_fn);
+      logger_error.append_param(l_params, 'logger_error.id', p_logger_log.id);
+      logger_error.append_param(l_params, 'logger_error.logger_level', p_logger_log.logger_level);
+      logger_error.append_param(l_params, 'Plugin Function', l_plugin_fn);
 
       select scope
       into l_scope
@@ -791,7 +791,7 @@ as
       where 1=1
         and id = p_logger_log.id;
 
-      logger.log_error('Exception in plugin procedure: ' || l_plugin_fn, l_scope, null, l_params);
+      logger_error.log_error('Exception in plugin procedure: ' || l_plugin_fn, l_scope, null, l_params);
 
       start_stop_plugin(p_in_plugin => false);
 
@@ -1115,7 +1115,7 @@ as
           l_log_null_item_yn := 'Y';
         end if;
 
-        if logger.is_number(l_item_type) then
+        if logger_error.is_number(l_item_type) then
           l_item_type_page_id := to_number(l_item_type);
         end if;
 
@@ -1127,7 +1127,7 @@ as
           from apex_application_items
           where 1=1
             and application_id = l_app_id
-            and l_item_type in (logger.g_apex_item_type_all, logger.g_apex_item_type_app)
+            and l_item_type in (logger_error.g_apex_item_type_all, logger_error.g_apex_item_type_app)
           union all
           -- Application page items
           select 2 app_page_seq, page_id, item_name, v(item_name) item_value
@@ -1136,7 +1136,7 @@ as
             and application_id = l_app_id
             and (
               1=2
-              or l_item_type in (logger.g_apex_item_type_all, logger.g_apex_item_type_page)
+              or l_item_type in (logger_error.g_apex_item_type_all, logger_error.g_apex_item_type_page)
               or (l_item_type_page_id is not null and l_item_type_page_id = page_id)
             )
           )
@@ -1171,7 +1171,7 @@ as
     p_text in varchar2 default null,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
     l_proc_name varchar2(100);
     l_lineno varchar2(100);
@@ -1182,7 +1182,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_error) then
+      if ok_to_log(logger_error.g_error) then
         get_debug_info(
           p_callstack => dbms_utility.format_call_stack,
           o_unit => l_proc_name,
@@ -1201,7 +1201,7 @@ as
         ins_logger_logs(
           p_unit_name => upper(l_proc_name) ,
           p_scope => p_scope ,
-          p_logger_level => logger.g_error,
+          p_logger_level => logger_error.g_error,
           p_extra => l_extra,
           p_text => l_text,
           p_call_stack => l_call_stack,
@@ -1212,7 +1212,7 @@ as
         $if $$logger_plugin_error $then
 
           if not g_in_plugin_error then
-            g_plug_logger_log_error.logger_level := logger.g_error;
+            g_plug_logger_log_error.logger_level := logger_error.g_error;
             g_plug_logger_log_error.id := g_log_id;
 
             $if $$logger_debug $then
@@ -1248,16 +1248,16 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_permanent) then
+      if ok_to_log(logger_error.g_permanent) then
         log_internal(
           p_text => p_text,
-          p_log_level => logger.g_permanent,
+          p_log_level => logger_error.g_permanent,
           p_scope => p_scope,
           p_extra => p_extra,
           p_callstack => dbms_utility.format_call_stack,
@@ -1288,16 +1288,16 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_warning) then
+      if ok_to_log(logger_error.g_warning) then
         log_internal(
           p_text => p_text,
-          p_log_level => logger.g_warning,
+          p_log_level => logger_error.g_warning,
           p_scope => p_scope,
           p_extra => p_extra,
           p_callstack => dbms_utility.format_call_stack,
@@ -1327,10 +1327,10 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
-    logger.log_warning(
+    logger_error.log_warning(
       p_text => p_text,
       p_scope => p_scope,
       p_extra => p_extra,
@@ -1358,16 +1358,16 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_information) then
+      if ok_to_log(logger_error.g_information) then
         log_internal(
           p_text => p_text,
-          p_log_level => logger.g_information,
+          p_log_level => logger_error.g_information,
           p_scope => p_scope,
           p_extra => p_extra,
           p_callstack => dbms_utility.format_call_stack,
@@ -1397,10 +1397,10 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
-    logger.log_information(
+    logger_error.log_information(
       p_text => p_text,
       p_scope => p_scope,
       p_extra => p_extra,
@@ -1429,17 +1429,17 @@ as
     p_text in varchar2,
     p_scope in varchar2 default null,
     p_extra in clob default null,
-    p_params in tab_param default logger.gc_err_empty_tab_param)
+    p_params in tab_param default logger_error.gc_err_empty_tab_param)
   is
   begin
 
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         log_internal(
           p_text => p_text,
-          p_log_level => logger.g_debug,
+          p_log_level => logger_error.g_debug,
           p_scope => p_scope,
           p_extra => p_extra,
           p_callstack => dbms_utility.format_call_stack,
@@ -1512,7 +1512,7 @@ as
    * @param p_detail_level USER, ALL, NLS, INSTANCE
    * @param p_show_null
    * @param p_scope
-   * @param p_level Highest level to run at (default logger.g_debug). Example. If you set to logger.g_error it will work when both in DEBUG and ERROR modes. However if set to logger.g_debug(default) will not store values when level is set to ERROR.
+   * @param p_level Highest level to run at (default logger_error.g_debug). Example. If you set to logger_error.g_error it will work when both in DEBUG and ERROR modes. However if set to logger_error.g_debug(default) will not store values when level is set to ERROR.
    */
   procedure log_userenv(
     p_detail_level in varchar2 default 'USER',-- ALL, NLS, USER, INSTANCE,
@@ -1525,7 +1525,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(nvl(p_level, logger.g_debug)) then
+      if ok_to_log(nvl(p_level, logger_error.g_debug)) then
         l_extra := get_sys_context(
           p_detail_level => p_detail_level,
           p_vertical => true,
@@ -1533,7 +1533,7 @@ as
 
         log_internal(
           p_text => 'USERENV values stored in the EXTRA column',
-          p_log_level => nvl(p_level, logger.g_sys_context),
+          p_log_level => nvl(p_level, logger_error.g_sys_context),
           p_scope => p_scope,
           p_extra => l_extra);
       end if;
@@ -1554,7 +1554,7 @@ as
    * @created ???
    * @param p_show_null
    * @param p_scope
-   * @param p_level Highest level to run at (default logger.g_debug). Example. If you set to logger.g_error it will work when both in DEBUG and ERROR modes. However if set to logger.g_debug(default) will not store values when level is set to ERROR.
+   * @param p_level Highest level to run at (default logger_error.g_debug). Example. If you set to logger_error.g_error it will work when both in DEBUG and ERROR modes. However if set to logger_error.g_debug(default) will not store values when level is set to ERROR.
    */
   procedure log_cgi_env(
     p_show_null in boolean default false,
@@ -1566,11 +1566,11 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(nvl(p_level, logger.g_debug)) then
+      if ok_to_log(nvl(p_level, logger_error.g_debug)) then
         l_extra := get_cgi_env(p_show_null    => p_show_null);
         log_internal(
           p_text => 'CGI ENV values stored in the EXTRA column',
-          p_log_level => nvl(p_level, logger.g_sys_context),
+          p_log_level => nvl(p_level, logger_error.g_sys_context),
           p_scope => p_scope,
           p_extra => l_extra);
       end if;
@@ -1592,7 +1592,7 @@ as
    * @param p_text
    * @param p_scope
    * @param p_show_common_codes
-   * @param p_level Highest level to run at (default logger.g_debug). Example. If you set to logger.g_error it will work when both in DEBUG and ERROR modes. However if set to logger.g_debug(default) will not store values when level is set to ERROR.
+   * @param p_level Highest level to run at (default logger_error.g_debug). Example. If you set to logger_error.g_error it will work when both in DEBUG and ERROR modes. However if set to logger_error.g_debug(default) will not store values when level is set to ERROR.
    */
   procedure log_character_codes(
     p_text in varchar2,
@@ -1606,12 +1606,12 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(nvl(p_level, logger.g_debug)) then
+      if ok_to_log(nvl(p_level, logger_error.g_debug)) then
         l_dump := get_character_codes(p_text,p_show_common_codes);
 
         log_internal(
           p_text => 'GET_CHARACTER_CODES output stored in the EXTRA column',
-          p_log_level => nvl(p_level, logger.g_debug),
+          p_log_level => nvl(p_level, logger_error.g_debug),
           p_scope => p_scope,
           p_extra => l_dump);
       end if;
@@ -1636,12 +1636,12 @@ as
    * @param p_scope
    * @param p_item_type Either the g_apex_item_type_... type or just the APEX page number for a specific page.
    * @param p_log_null_items If set to false, null values won't be logged
-   * @param p_level Highest level to run at (default logger.g_debug). Example. If you set to logger.g_error it will work when both in DEBUG and ERROR modes. However if set to logger.g_debug(default) will not store values when level is set to ERROR.
+   * @param p_level Highest level to run at (default logger_error.g_debug). Example. If you set to logger_error.g_error it will work when both in DEBUG and ERROR modes. However if set to logger_error.g_debug(default) will not store values when level is set to ERROR.
    */
   procedure log_apex_items(
     p_text in varchar2 default 'Log APEX Items',
     p_scope in logger_logs.scope%type default null,
-    p_item_type in varchar2 default logger.g_apex_item_type_all,
+    p_item_type in varchar2 default logger_error.g_apex_item_type_all,
     p_log_null_items in boolean default true,
     p_level in logger_logs.logger_level%type default null)
   is
@@ -1651,17 +1651,17 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(nvl(p_level, logger.g_debug)) then
+      if ok_to_log(nvl(p_level, logger_error.g_debug)) then
 
         $if $$apex $then
           -- Validate p_item_type
           assert(
-            p_condition => upper(p_item_type) in (logger.g_apex_item_type_all, logger.g_apex_item_type_app, logger.g_apex_item_type_page) or logger.is_number(p_item_type),
-            p_message => logger.sprintf('APEX Item Scope was set to %s. Must be %s, %s, %s, or page number', p_item_type, logger.g_apex_item_type_all, logger.g_apex_item_type_page, logger.g_apex_item_type_page));
+            p_condition => upper(p_item_type) in (logger_error.g_apex_item_type_all, logger_error.g_apex_item_type_app, logger_error.g_apex_item_type_page) or logger_error.is_number(p_item_type),
+            p_message => logger_error.sprintf('APEX Item Scope was set to %s. Must be %s, %s, %s, or page number', p_item_type, logger_error.g_apex_item_type_all, logger_error.g_apex_item_type_page, logger_error.g_apex_item_type_page));
 
           log_internal(
             p_text => p_text,
-            p_log_level => nvl(p_level, logger.g_apex),
+            p_log_level => nvl(p_level, logger_error.g_apex),
             p_scope => p_scope);
 
           snapshot_apex_items(
@@ -1673,7 +1673,7 @@ as
 
           log_internal(
             p_text => l_error,
-            p_log_level => logger.g_apex,
+            p_log_level => logger_error.g_apex,
             p_scope => p_scope);
         $end
       end if;
@@ -1707,12 +1707,12 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         g_running_timers := g_running_timers + 1;
 
         if g_running_timers > 1 then
           -- Use 'a' since lpad requires a value to pad
-          l_pad := replace(lpad('a',logger.g_running_timers,'>')||' ', 'a', null);
+          l_pad := replace(lpad('a',logger_error.g_running_timers,'>')||' ', 'a', null);
         end if;
 
         g_proc_start_times(p_unit) := localtimestamp;
@@ -1755,12 +1755,12 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         if g_proc_start_times.exists(p_unit) then
 
           if g_running_timers > 1 then
             -- Use 'a' since lpad requires a value to pad
-            l_pad := replace(lpad('a',logger.g_running_timers,'>')||' ', 'a', null);
+            l_pad := replace(lpad('a',logger_error.g_running_timers,'>')||' ', 'a', null);
           end if;
 
           --l_time_string := rtrim(regexp_replace(systimestamp-(g_proc_start_times(p_unit)),'.+?[[:space:]](.*)','\1',1,0),0);
@@ -1810,7 +1810,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         if g_proc_start_times.exists(p_unit) then
 
           l_time_string := rtrim(regexp_replace(localtimestamp - (g_proc_start_times(p_unit)),'.+?[[:space:]](.*)','\1',1,0),0);
@@ -1866,7 +1866,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         if g_proc_start_times.exists(p_unit) then
           l_interval := localtimestamp - (g_proc_start_times(p_unit));
           l_seconds := extract(day from l_interval) * 86400 + extract(hour from l_interval) * 3600 + extract(minute from l_interval) * 60 + extract(second from l_interval);
@@ -1909,7 +1909,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if ok_to_log(logger.g_debug) then
+      if ok_to_log(logger_error.g_debug) then
         g_running_timers := 0;
         g_proc_start_times.delete;
       end if;
@@ -1936,7 +1936,7 @@ as
    */
   function get_pref(
     p_pref_name in logger_prefs.pref_name%type,
-    p_pref_type in logger_prefs.pref_type%type default logger.g_pref_type_logger)
+    p_pref_type in logger_prefs.pref_type%type default logger_error.g_pref_type_logger)
     return varchar2
     $if not dbms_db_version.ver_le_10_2  $then
       result_cache
@@ -1969,8 +1969,8 @@ as
           -- Client specific logger levels trump system level logger level
           select
             case
-              when l_pref_name = logger.gc_err_pref_level then logger_level
-              when l_pref_name = logger.gc_err_pref_include_call_stack then include_call_stack
+              when l_pref_name = logger_error.gc_err_pref_level then logger_level
+              when l_pref_name = logger_error.gc_err_pref_include_call_stack then include_call_stack
             end pref_value,
             1 rank
           from logger_prefs_by_client_id
@@ -1981,8 +1981,8 @@ as
             -- #127
             -- Prefs by client aren't available for custom prefs right now
             -- Only need to search this table if p_pref_type is LOGGER
-            and l_pref_type = logger.g_pref_type_logger
-            and l_pref_name in (logger.gc_err_pref_level, logger.gc_err_pref_include_call_stack)
+            and l_pref_type = logger_error.g_pref_type_logger
+            and l_pref_name in (logger_error.gc_err_pref_level, logger_error.gc_err_pref_include_call_stack)
           union
           -- System level configuration
           select pref_value, 2 rank
@@ -2032,7 +2032,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if l_pref_type = logger.g_pref_type_logger then
+      if l_pref_type = logger_error.g_pref_type_logger then
         raise_application_error(-20001, 'Can not set ' || l_pref_type || '. Reserved for Logger');
       end if;
 
@@ -2078,7 +2078,7 @@ as
     $if $$no_op $then
       null;
     $else
-      if l_pref_type = logger.g_pref_type_logger then
+      if l_pref_type = logger_error.g_pref_type_logger then
         raise_application_error(-20001, 'Can not delete ' || l_pref_type || '. Reserved for Logger');
       end if;
 
@@ -2110,7 +2110,7 @@ as
 
   is
     $if $$no_op is null or not $$no_op $then
-      l_purge_after_days number := nvl(p_purge_after_days,get_pref(logger.gc_err_pref_purge_after_days));
+      l_purge_after_days number := nvl(p_purge_after_days,get_pref(logger_error.gc_err_pref_purge_after_days));
     $end
     pragma autonomous_transaction;
   begin
@@ -2155,7 +2155,7 @@ as
     $else
       purge(
         p_purge_after_days => to_number(p_purge_after_days),
-        p_purge_min_level => convert_level_char_to_num(nvl(p_purge_min_level,get_pref(logger.gc_err_pref_purge_min_level))));
+        p_purge_min_level => convert_level_char_to_num(nvl(p_purge_min_level,get_pref(logger_error.gc_err_pref_purge_min_level))));
     $end
   end purge;
 
@@ -2258,36 +2258,36 @@ as
       into l_debug
       from logger_prefs
       where 1=1
-        and pref_type = logger.g_pref_type_logger
-        and pref_name = logger.gc_err_pref_level;
+        and pref_type = logger_error.g_pref_type_logger
+        and pref_name = logger_error.gc_err_pref_level;
 
       $if $$flashback_enabled $then
         l_flashback := 'Enabled';
       $end
 
-      l_version := get_pref(logger.gc_err_pref_logger_version);
+      l_version := get_pref(logger_error.gc_err_pref_logger_version);
 
       display_output('Logger Version',l_version);
       display_output('Debug Level',l_debug);
-      display_output('Capture Call Stack',get_pref(logger.gc_err_pref_include_call_stack));
-      display_output('Protect Admin Procedures',get_pref(logger.gc_err_pref_protect_admin_procs));
+      display_output('Capture Call Stack',get_pref(logger_error.gc_err_pref_include_call_stack));
+      display_output('Protect Admin Procedures',get_pref(logger_error.gc_err_pref_protect_admin_procs));
       display_output('APEX Tracing',l_apex);
       display_output('SCN Capture',l_flashback);
-      display_output('Min. Purge Level',get_pref(logger.gc_err_pref_purge_min_level));
-      display_output('Purge Older Than',get_pref(logger.gc_err_pref_purge_after_days)||' days');
-      display_output('Pref by client_id expire hours',get_pref(logger.gc_err_pref_client_id_expire_hours)||' hours');
+      display_output('Min. Purge Level',get_pref(logger_error.gc_err_pref_purge_min_level));
+      display_output('Purge Older Than',get_pref(logger_error.gc_err_pref_purge_after_days)||' days');
+      display_output('Pref by client_id expire hours',get_pref(logger_error.gc_err_pref_client_id_expire_hours)||' hours');
       $if $$rac_lt_11_2  $then
         display_output('RAC pre-11.2 Code','TRUE');
       $end
 
       -- #46 Only display plugins if enabled
       $if $$logger_plugin_error $then
-        display_output('PLUGIN_FN_ERROR',get_pref(logger.gc_err_pref_plugin_fn_error));
+        display_output('PLUGIN_FN_ERROR',get_pref(logger_error.gc_err_pref_plugin_fn_error));
       $end
 
       -- #64
       $if $$logger_debug $then
-        display_output('LOGGER_DEBUG',get_pref(logger.gc_err_pref_logger_debug) || '   *** SHOULD BE TURNED OFF!!! SET TO FALSE ***');
+        display_output('LOGGER_DEBUG',get_pref(logger_error.gc_err_pref_logger_debug) || '   *** SHOULD BE TURNED OFF!!! SET TO FALSE ***');
       $end
 
 
@@ -2304,7 +2304,7 @@ as
           display_output('Client Identifier', l_client_identifier);
           display_output('Client - Debug Level', l_cur_logger_level);
           display_output('Client - Call Stack', l_cur_include_call_stack);
-          display_output('Client - Expiry Date', logger.tochar(l_cur_expiry_date));
+          display_output('Client - Expiry Date', logger_error.tochar(l_cur_expiry_date));
         exception
           when no_data_found then
             null; -- No client specific logging set
@@ -2340,7 +2340,7 @@ as
    * @param p_client_id_expire_hours If p_client_id, expire after number of hours. If not defined, will default to system preference PREF_BY_CLIENT_ID_EXPIRE_HOURS
    */
   procedure set_level(
-    p_level in varchar2 default logger.g_debug_name,
+    p_level in varchar2 default logger_error.g_debug_name,
     p_client_id in varchar2 default null,
     p_include_call_stack in varchar2 default null,
     p_client_id_expire_hours in number default null
@@ -2365,7 +2365,7 @@ as
         l_level := convert_level_num_to_char(p_level => p_level);
       end if;
 
-      l_include_call_stack := nvl(trim(upper(p_include_call_stack)), get_pref(logger.gc_err_pref_include_call_stack));
+      l_include_call_stack := nvl(trim(upper(p_include_call_stack)), get_pref(logger_error.gc_err_pref_include_call_stack));
 
       assert(
           l_level in (g_off_name, g_permanent_name, g_error_name, g_warning_name, g_information_name, g_debug_name, g_timing_name, g_sys_context_name, g_apex_name),
@@ -2385,20 +2385,20 @@ as
         l_ctx := l_ctx || ', SESSION_USER: '||sys_context('USERENV','SESSION_USER');
 
         -- #29 Deprecate old levels. Log and set to DEBUG
-        if l_level in (logger.g_apex_name, logger.g_sys_context_name, logger.g_timing_name)  then
-          logger.ins_logger_logs(
-            p_logger_level => logger.g_warning,
+        if l_level in (logger_error.g_apex_name, logger_error.g_sys_context_name, logger_error.g_timing_name)  then
+          logger_error.ins_logger_logs(
+            p_logger_level => logger_error.g_warning,
             p_text =>
-              logger.sprintf('Logger level: %s1 is deprecated. Set for client_id %s2. Automatically setting to %s3', l_level, nvl(p_client_id, '<global>'), logger.g_debug_name),
+              logger_error.sprintf('Logger level: %s1 is deprecated. Set for client_id %s2. Automatically setting to %s3', l_level, nvl(p_client_id, '<global>'), logger_error.g_debug_name),
             po_id => l_id);
 
-          l_level := logger.g_debug_name;
+          l_level := logger_error.g_debug_name;
         end if;
 
 
         -- Separate updates/inserts for client_id or global settings
         if p_client_id is not null then
-          l_client_id_expire_hours := nvl(p_client_id_expire_hours, get_pref(logger.gc_err_pref_client_id_expire_hours));
+          l_client_id_expire_hours := nvl(p_client_id_expire_hours, get_pref(logger_error.gc_err_pref_client_id_expire_hours));
           l_expiry_date := sysdate + l_client_id_expire_hours/24;
 
           merge into logger_prefs_by_client_id ci
@@ -2419,24 +2419,24 @@ as
           update logger_prefs
           set pref_value = l_level
           where 1=1
-            and pref_type = logger.g_pref_type_logger
-            and pref_name = logger.gc_err_pref_level;
+            and pref_type = logger_error.g_pref_type_logger
+            and pref_name = logger_error.gc_err_pref_level;
         end if;
 
         -- #110 Need to reset all contexts so that level is reset for sessions where client_identifier is defined
         -- This is required for global changes since sessions with client_identifier set won't be properly updated.
         if p_client_id is null then
-          logger.null_global_contexts;
+          logger_error.null_global_contexts;
         end if;
 
-        logger.save_global_context(
+        logger_error.save_global_context(
           p_attribute => gc_err_ctx_attr_level,
-          p_value => logger.convert_level_char_to_num(l_level),
+          p_value => logger_error.convert_level_char_to_num(l_level),
           p_client_id => p_client_id); -- Note: if p_client_id is null then it will set for global`
 
         -- Manual insert to ensure that data gets logged, regardless of logger_level
-        logger.ins_logger_logs(
-          p_logger_level => logger.g_information,
+        logger_error.ins_logger_logs(
+          p_logger_level => logger_error.g_information,
           p_text => 'Log level set to ' || l_level || ' for client_id: ' || nvl(p_client_id, '<global>') || ', include_call_stack=' || l_include_call_stack || ' by ' || l_ctx,
           po_id => l_id);
 
@@ -2642,12 +2642,12 @@ as
    * @param p_val Value in its format. Will be converted to string
    */
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in varchar2
   )
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
@@ -2659,86 +2659,86 @@ as
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in number)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in date)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in timestamp)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in timestamp with time zone)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in timestamp with local time zone)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
   procedure append_param(
-    p_params in out nocopy logger.tab_param,
+    p_params in out nocopy logger_error.tab_param,
     p_name in varchar2,
     p_val in boolean)
   as
-    l_param logger.rec_param;
+    l_param logger_error.rec_param;
   begin
     $if $$no_op $then
       null;
     $else
-      logger.append_param(p_params => p_params, p_name => p_name, p_val => logger.tochar(p_val => p_val));
+      logger_error.append_param(p_params => p_params, p_name => p_name, p_val => logger_error.tochar(p_val => p_val));
     $end
   end append_param;
 
@@ -2943,11 +2943,11 @@ as
    */
   function get_plugin_rec(
     p_logger_level in logger_logs.logger_level%type)
-    return logger.rec_logger_log
+    return logger_error.rec_logger_log
   as
   begin
 
-    if p_logger_level = logger.g_error then
+    if p_logger_level = logger_error.g_error then
       return g_plug_logger_log_error;
     end if;
   end get_plugin_rec;

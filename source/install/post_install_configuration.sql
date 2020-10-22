@@ -16,26 +16,26 @@ begin
   into l_current_level
   from logger_prefs
   where 1=1
-    and pref_type = logger.g_pref_type_logger
+    and pref_type = logger_error.g_pref_type_logger
     and pref_name = 'LEVEL';
 
   -- Note: Probably not necessary but pre 1.4.0 code had this in place
-  logger.set_level(l_current_level);
+  logger_error.set_level(l_current_level);
 end;
 /
 
 prompt
 prompt *************************************************
-prompt Now executing LOGGER.STATUS...
+prompt Now executing LOGGER_ERROR.STATUS...
 prompt
 
 begin
-	logger.status;
+	logger_error.status;
 end;
 /
 
 prompt *************************************************
 begin
-	logger.log_permanent('Logger version '||logger.get_pref('LOGGER_VERSION')||' installed.');
+	logger_error.log_permanent('Logger error version '||logger.get_pref('LOGGER_ERROR_VERSION')||' installed.');
 end;
 /

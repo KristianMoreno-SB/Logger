@@ -66,7 +66,7 @@ begin
     :new.pref_type := upper(:new.pref_type);
 
     if 1=1
-      and :new.pref_type = logger.g_pref_type_logger
+      and :new.pref_type = logger_error.g_pref_type_logger
       and :new.pref_name = 'LEVEL' then
       :new.pref_value := upper(:new.pref_value);
     end if;
@@ -76,18 +76,18 @@ begin
     -- $if $$currently_installing is null or not $$currently_installing $then
       -- Since logger.pks may not be installed when this trigger is compiled, need to move some code here
       if 1=1
-        and :new.pref_type = logger.g_pref_type_logger
+        and :new.pref_type = logger_error.g_pref_type_logger
         and :new.pref_name = 'LEVEL'
-        and upper(:new.pref_value) not in (logger.g_off_name, logger.g_permanent_name, logger.g_error_name, logger.g_warning_name, logger.g_information_name, logger.g_debug_name, logger.g_timing_name, logger.g_sys_context_name, logger.g_apex_name) then
+        and upper(:new.pref_value) not in (logger_error.g_off_name, logger_error.g_permanent_name, logger_error.g_error_name, logger_error.g_warning_name, logger_error.g_information_name, logger_error.g_debug_name, logger_error.g_timing_name, logger_error.g_sys_context_name, logger_error.g_apex_name) then
         raise_application_error(-20000, '"LEVEL" must be one of the following values: ' ||
-          logger.g_off_name || ', ' || logger.g_permanent_name || ', ' || logger.g_error_name || ', ' ||
-          logger.g_warning_name || ', ' || logger.g_information_name || ', ' || logger.g_debug_name || ', ' ||
-          logger.g_timing_name || ', ' || logger.g_sys_context_name || ', ' || logger.g_apex_name);
+          logger_error.g_off_name || ', ' || logger_error.g_permanent_name || ', ' || logger_error.g_error_name || ', ' ||
+          logger_error.g_warning_name || ', ' || logger_error.g_information_name || ', ' || logger_error.g_debug_name || ', ' ||
+          logger_error.g_timing_name || ', ' || logger_error.g_sys_context_name || ', ' || logger_error.g_apex_name);
       end if;
 
       -- Allow for null to be used for Plugins, then default to NONE
       if 1=1
-        and :new.pref_type = logger.g_pref_type_logger
+        and :new.pref_type = logger_error.g_pref_type_logger
         and :new.pref_name like 'PLUGIN_FN%'
         and :new.pref_value is null then
         :new.pref_value := 'NONE';
@@ -97,7 +97,7 @@ begin
       -- Only predefined preferences and Custom Preferences are allowed
       -- Custom Preferences must be prefixed with CUST_
       if 1=1
-        and :new.pref_type = logger.g_pref_type_logger
+        and :new.pref_type = logger_error.g_pref_type_logger
         and :new.pref_name not in (
           'GLOBAL_CONTEXT_NAME'
           ,'INCLUDE_CALL_STACK'
@@ -116,14 +116,14 @@ begin
       end if;
 
       -- this is because the logger package is not installed yet.  We enable it in logger_configure
-      logger.null_global_contexts;
+      logger_error.null_global_contexts;
     -- #TODO:60 mdsouza: 3.1.1
     -- $end
   $end -- $$logger_no_op_install
 end;
 /
 
-alter trigger biu_logger_prefs disable;
+alter trigger biu_logger_error_prefs disable;
 
 declare
 begin

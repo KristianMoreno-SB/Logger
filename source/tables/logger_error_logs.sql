@@ -54,7 +54,7 @@ create table logger_error_logs(
     select nullable
     into l_nullable
     from user_tab_columns
-    where table_name = 'LOGGER_LOGS'
+    where table_name = 'LOGGER_ERROR_LOGS'
       and column_name = upper(l_required_columns(i));
 
     if l_nullable = 'Y' then
@@ -81,7 +81,7 @@ create table logger_error_logs(
     into l_count
     from user_tab_columns
     where 1=1
-      and table_name = 'LOGGER_LOGS'
+      and table_name = 'LOGGER_ERROR_LOGS'
       and column_name = l_new_cols(i).column_name;
 
     if l_count = 0 then

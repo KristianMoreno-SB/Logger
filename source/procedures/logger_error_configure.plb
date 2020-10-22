@@ -95,7 +95,7 @@ begin
 	-- Since this procedure will recompile Logger, if it directly references a variable in Logger
 	-- It will lock itself while trying to recompile
 	-- Work around is to pre-store the variable using execute immediate
-	execute immediate 'begin :x := logger.g_pref_type_logger; end;' using out l_pref_type_logger;
+	execute immediate 'begin :x := logger_error.g_pref_type_logger; end;' using out l_pref_type_logger;
 
   select lp.pref_value
   into l_pref_value
@@ -149,7 +149,7 @@ begin
   execute immediate l_sql;
 
   -- just in case this is a re-install / upgrade, the global contexts will persist so reset them
-  logger.null_global_contexts;
+  logger_error.null_global_contexts;
 
 end logger_configure;
 /
