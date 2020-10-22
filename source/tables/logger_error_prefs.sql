@@ -11,14 +11,14 @@ begin
   select count(1)
   into l_count
   from user_tables
-  where table_name = 'LOGGER_PREFS';
+  where table_name = 'LOGGER_ERROR_PREFS';
 
   if l_count = 0 then
     execute immediate '
-create table logger_prefs(
+create table logger_error_prefs(
   pref_name	varchar2(255),
   pref_value	varchar2(255) not null,
-  constraint logger_prefs_pk primary key (pref_name) enable
+  constraint logger_error_prefs_pk primary key (pref_name) enable
 )
     ';
   end if;
@@ -55,8 +55,8 @@ end;
 -- alter session set plsql_ccflags='currently_installing:true&cur_plsql_ccflags'
 -- /
 
-create or replace trigger biu_logger_prefs
-  before insert or update on logger_prefs
+create or replace trigger biu_logger_error_prefs
+  before insert or update on logger_error_prefs
   for each row
 begin
   $if $$logger_no_op_install $then
@@ -112,7 +112,7 @@ begin
           ,'PURGE_MIN_LEVEL'
         )
       then
-        raise_application_error (-20000, 'Setting system level preferences are restricted to a set list.');
+        raise_application_error (-20000, 'La asignación de las preferencias del sistemas se encuentran restringidas a una lista predefinida.');
       end if;
 
       -- this is because the logger package is not installed yet.  We enable it in logger_configure
@@ -131,7 +131,7 @@ begin
     null;
   $else
     -- Configure Data
-    merge into logger_prefs p
+    merge into logger_error_prefs p
     using (
       select 'PURGE_AFTER_DAYS' pref_name, '7' pref_value from dual union
       select 'PURGE_MIN_LEVEL' pref_name, 'DEBUG' pref_value from dual union
@@ -185,19 +185,19 @@ begin
     into l_count
     from user_tab_columns
     where 1=1
-      and upper(table_name) = upper('logger_prefs')
+      and upper(table_name) = upper('logger_error_prefs')
       and column_name = l_new_cols(i).column_name;
 
     if l_count = 0 then
-      execute immediate 'alter table logger_prefs add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
+      execute immediate 'alter table logger_error_prefs add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
 
       -- Custom post-add columns
 
       -- #127
       if lower(l_new_cols(i).column_name) = 'pref_type' then
         -- If "LOGGER" is changed then modify logger.pks g_logger_prefs_pref_type value
-        execute immediate q'!update logger_prefs set pref_type = 'LOGGER'!';
-        execute immediate q'!alter table logger_prefs modify pref_type not null!';
+        execute immediate q'!update logger_error_prefs set pref_type = 'LOGGER'!';
+        execute immediate q'!alter table logger_error_prefs modify pref_type not null!';
       end if;
 
     end if; -- l_count = 0
@@ -215,12 +215,12 @@ begin
   into l_count
   from user_cons_columns
   where 1=1
-    and constraint_name = 'LOGGER_PREFS_PK'
+    and constraint_name = 'LOGGER_ERROR_PREFS_PK'
     and column_name != 'PREF_NAME';
 
   if l_count = 0 then
     -- PK only has one column, drop it and it will be rebuilt below
-    execute immediate 'alter table logger_prefs drop constraint logger_prefs_pk';
+    execute immediate 'alter table logger_error_prefs drop constraint logger_error_prefs_pk';
   end if;
 
 end;
@@ -241,21 +241,21 @@ declare
   l_count pls_integer;
   l_sql varchar2(500);
 begin
-  l_constraint.name := 'LOGGER_PREFS_PK';
+  l_constraint.name := 'LOGGER_ERROR_PREFS_PK';
   l_constraint.condition := 'primary key (pref_type, pref_name)';
   l_constraints(l_constraints.count+1) := l_constraint;
 
-  l_constraint.name := 'LOGGER_PREFS_CK1';
+  l_constraint.name := 'LOGGER_ERROR_PREFS_CK1';
   l_constraint.condition := 'check (pref_name = upper(pref_name))';
   l_constraints(l_constraints.count+1) := l_constraint;
 
-  l_constraint.name := 'LOGGER_PREFS_CK2';
+  l_constraint.name := 'LOGGER_ERROR_PREFS_CK2';
   l_constraint.condition := 'check (pref_type = upper(pref_type))';
   l_constraints(l_constraints.count+1) := l_constraint;
 
 
   -- All pref names/types should be upper
-  update logger_prefs
+  update logger_error_prefs
   set
     pref_name = upper(pref_name),
     pref_type = upper(pref_type)
@@ -268,11 +268,11 @@ begin
     into l_count
     from user_constraints
     where 1=1
-      and table_name = 'LOGGER_PREFS'
+      and table_name = 'LOGGER_ERROR_PREFS'
       and constraint_name = l_constraints(i).name;
 
     if l_count = 0 then
-      l_sql := 'alter table logger_prefs add constraint %CONSTRAINT_NAME% %CONSTRAINT_CONDITION%';
+      l_sql := 'alter table logger_error_prefs add constraint %CONSTRAINT_NAME% %CONSTRAINT_CONDITION%';
       l_sql := replace(l_sql, '%CONSTRAINT_NAME%', l_constraints(i).name);
       l_sql := replace(l_sql, '%CONSTRAINT_CONDITION%', l_constraints(i).condition);
 
@@ -283,4 +283,4 @@ begin
 end;
 /
 
-alter trigger biu_logger_prefs enable;
+alter trigger biu_logger_error_prefs enable;
