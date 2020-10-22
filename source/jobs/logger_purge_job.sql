@@ -12,7 +12,7 @@ begin
     dbms_scheduler.create_job(
        job_name => l_job_name,
        job_type => 'PLSQL_BLOCK',
-       job_action => 'begin logger.purge; end; ',
+       job_action => 'begin logger_error.purge; end; ',
        start_date => systimestamp,
        repeat_interval => 'FREQ=DAILY; BYHOUR=1',
        enabled => TRUE,

@@ -12,7 +12,7 @@ begin
     dbms_scheduler.create_job(
        job_name => l_job_name,
        job_type => 'PLSQL_BLOCK',
-       job_action => 'begin logger.unset_client_level; end; ',
+       job_action => 'begin logger_error.unset_client_level; end; ',
        start_date => systimestamp,
        repeat_interval => 'FREQ=HOURLY; BYHOUR=1',
        enabled => TRUE,
