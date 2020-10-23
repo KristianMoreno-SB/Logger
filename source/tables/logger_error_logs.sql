@@ -20,11 +20,11 @@ begin
   select count(1)
   into l_count
   from user_tables
-  where table_name = 'LOGGER_ERROR_LOGS';
+  where table_name = 'LOGGERR_LOGS';
 
   if l_count = 0 then
     execute immediate '
-create table logger_error_logs(
+create table loggerr_logs(
   id number,
   logger_level number,
   text varchar2(4000),
@@ -39,8 +39,8 @@ create table logger_error_logs(
   line_no varchar2(100),
   scn number,
   extra clob,
-  constraint logger_error_logs_pk primary key (id) enable,
-  constraint logger_error_logs_lvl_ck check(logger_level in (1,2,4,8,16,32,64,128))
+  constraint loggerr_logs_pk primary key (id) enable,
+  constraint loggerr_logs_lvl_ck check(logger_level in (1,2,4,8,16,32,64,128))
 )
     ';
   end if;
@@ -54,11 +54,11 @@ create table logger_error_logs(
     select nullable
     into l_nullable
     from user_tab_columns
-    where table_name = 'LOGGER_ERROR_LOGS'
+    where table_name = 'LOGGERR_LOGS'
       and column_name = upper(l_required_columns(i));
 
     if l_nullable = 'Y' then
-      execute immediate 'alter table logger_error_logs modify ' || l_required_columns(i) || ' not null';
+      execute immediate 'alter table loggerr_logs modify ' || l_required_columns(i) || ' not null';
     end if;
   end loop;
 
@@ -81,11 +81,11 @@ create table logger_error_logs(
     into l_count
     from user_tab_columns
     where 1=1
-      and table_name = 'LOGGER_ERROR_LOGS'
+      and table_name = 'LOGGERR_LOGS'
       and column_name = l_new_cols(i).column_name;
 
     if l_count = 0 then
-      execute immediate 'alter table LOGGER_ERROR_LOGS add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
+      execute immediate 'alter table LOGGERR_LOGS add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
     end if;
   end loop;
 
@@ -97,11 +97,11 @@ create table logger_error_logs(
     select count(1)
     into l_count
     from user_sequences
-    where sequence_name = 'LOGGER_ERROR_LOGS_SEQ';
+    where sequence_name = 'LOGGERR_LOGS_SEQ';
 
     if l_count = 0 then
       execute immediate '
-        create sequence logger_error_logs_seq
+        create sequence loggerr_logs_seq
             minvalue 1
             maxvalue 999999999999999999999999999
             start with 1
@@ -114,10 +114,10 @@ create table logger_error_logs(
     select count(1)
     into l_count
     from user_indexes
-    where index_name = 'LOGGER_ERROR_LOGS_IDX1';
+    where index_name = 'LOGGERR_LOGS_IDX1';
 
     if l_count = 0 then
-      execute immediate 'create index logger_error_logs_idx1 on logger_error_logs(time_stamp,logger_level)';
+      execute immediate 'create index loggerr_logs_idx1 on loggerr_logs(time_stamp,logger_level)';
     end if;
   $end
 
@@ -129,7 +129,7 @@ end;
 -- Drop trigger if still exists (from pre-2.1.0 releases) - Issue #31
 declare
   l_count pls_integer;
-  l_trigger_name user_triggers.trigger_name%type := 'BI_LOGGER_ERROR_LOGS';
+  l_trigger_name user_triggers.trigger_name%type := 'BI_LOGGERR_LOGS';
 begin
   select count(1)
   into l_count

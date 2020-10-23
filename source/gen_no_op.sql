@@ -4,9 +4,9 @@ set linesize 200
 set serverout on
 set termout off
 
-alter package logger_error compile body PLSQL_CCFLAGS='NO_OP:TRUE';
+alter package loggerr compile body PLSQL_CCFLAGS='NO_OP:TRUE';
 
-spool logger_error_no_op.pkb
+spool loggerr_no_op.pkb
 
 prompt create or replace
 
@@ -14,7 +14,7 @@ begin
     dbms_preprocessor.print_post_processed_source (
        object_type    => 'PACKAGE BODY',
        schema_name    => USER,
-       object_name    => 'LOGGER_ERROR');
+       object_name    => 'LOGGERR');
 end;
 /
 
@@ -22,6 +22,6 @@ prompt /
 
 spool off
 
-alter package logger compile body PLSQL_CCFLAGS='NO_OP:FALSE';
+alter package loggerr compile body PLSQL_CCFLAGS='NO_OP:FALSE';
 
 exit

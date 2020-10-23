@@ -11,14 +11,14 @@ begin
   select count(1)
   into l_count
   from user_tables
-  where table_name = 'LOGGER_ERROR_PREFS';
+  where table_name = 'LOGGERR_PREFS';
 
   if l_count = 0 then
     execute immediate '
-create table logger_error_prefs(
+create table loggerr_prefs(
   pref_name	varchar2(255),
   pref_value	varchar2(255) not null,
-  constraint logger_error_prefs_pk primary key (pref_name) enable
+  constraint loggerr_prefs_pk primary key (pref_name) enable
 )
     ';
   end if;
@@ -55,8 +55,8 @@ end;
 -- alter session set plsql_ccflags='currently_installing:true&cur_plsql_ccflags'
 -- /
 
-create or replace trigger biu_logger_error_prefs
-  before insert or update on logger_error_prefs
+create or replace trigger biu_loggerr_prefs
+  before insert or update on loggerr_prefs
   for each row
 begin
   $if $$logger_no_op_install $then
@@ -66,7 +66,7 @@ begin
     :new.pref_type := upper(:new.pref_type);
 
     if 1=1
-      and :new.pref_type = logger_error.g_pref_type_logger
+      and :new.pref_type = loggerr.g_pref_type_logger
       and :new.pref_name = 'LEVEL' then
       :new.pref_value := upper(:new.pref_value);
     end if;
@@ -76,18 +76,18 @@ begin
     -- $if $$currently_installing is null or not $$currently_installing $then
       -- Since logger.pks may not be installed when this trigger is compiled, need to move some code here
       if 1=1
-        and :new.pref_type = logger_error.g_pref_type_logger
+        and :new.pref_type = loggerr.g_pref_type_logger
         and :new.pref_name = 'LEVEL'
-        and upper(:new.pref_value) not in (logger_error.g_off_name, logger_error.g_permanent_name, logger_error.g_error_name, logger_error.g_warning_name, logger_error.g_information_name, logger_error.g_debug_name, logger_error.g_timing_name, logger_error.g_sys_context_name, logger_error.g_apex_name) then
+        and upper(:new.pref_value) not in (loggerr.g_off_name, loggerr.g_permanent_name, loggerr.g_error_name, loggerr.g_warning_name, loggerr.g_information_name, loggerr.g_debug_name, loggerr.g_timing_name, loggerr.g_sys_context_name, loggerr.g_apex_name) then
         raise_application_error(-20000, '"LEVEL" must be one of the following values: ' ||
-          logger_error.g_off_name || ', ' || logger_error.g_permanent_name || ', ' || logger_error.g_error_name || ', ' ||
-          logger_error.g_warning_name || ', ' || logger_error.g_information_name || ', ' || logger_error.g_debug_name || ', ' ||
-          logger_error.g_timing_name || ', ' || logger_error.g_sys_context_name || ', ' || logger_error.g_apex_name);
+          loggerr.g_off_name || ', ' || loggerr.g_permanent_name || ', ' || loggerr.g_error_name || ', ' ||
+          loggerr.g_warning_name || ', ' || loggerr.g_information_name || ', ' || loggerr.g_debug_name || ', ' ||
+          loggerr.g_timing_name || ', ' || loggerr.g_sys_context_name || ', ' || loggerr.g_apex_name);
       end if;
 
       -- Allow for null to be used for Plugins, then default to NONE
       if 1=1
-        and :new.pref_type = logger_error.g_pref_type_logger
+        and :new.pref_type = loggerr.g_pref_type_logger
         and :new.pref_name like 'PLUGIN_FN%'
         and :new.pref_value is null then
         :new.pref_value := 'NONE';
@@ -97,7 +97,7 @@ begin
       -- Only predefined preferences and Custom Preferences are allowed
       -- Custom Preferences must be prefixed with CUST_
       if 1=1
-        and :new.pref_type = logger_error.g_pref_type_logger
+        and :new.pref_type = loggerr.g_pref_type_logger
         and :new.pref_name not in (
           'GLOBAL_CONTEXT_NAME'
           ,'INCLUDE_CALL_STACK'
@@ -116,14 +116,14 @@ begin
       end if;
 
       -- this is because the logger package is not installed yet.  We enable it in logger_configure
-      logger_error.null_global_contexts;
+      loggerr.null_global_contexts;
     -- #TODO:60 mdsouza: 3.1.1
     -- $end
   $end -- $$logger_no_op_install
 end;
 /
 
-alter trigger biu_logger_error_prefs disable;
+alter trigger biu_loggerr_prefs disable;
 
 declare
 begin
@@ -131,7 +131,7 @@ begin
     null;
   $else
     -- Configure Data
-    merge into logger_error_prefs p
+    merge into loggerr_prefs p
     using (
       select 'PURGE_AFTER_DAYS' pref_name, '7' pref_value from dual union
       select 'PURGE_MIN_LEVEL' pref_name, 'DEBUG' pref_value from dual union
@@ -185,19 +185,19 @@ begin
     into l_count
     from user_tab_columns
     where 1=1
-      and upper(table_name) = upper('logger_error_prefs')
+      and upper(table_name) = upper('loggerr_prefs')
       and column_name = l_new_cols(i).column_name;
 
     if l_count = 0 then
-      execute immediate 'alter table logger_error_prefs add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
+      execute immediate 'alter table loggerr_prefs add (' || l_new_cols(i).column_name || ' ' || l_new_cols(i).data_type || ')';
 
       -- Custom post-add columns
 
       -- #127
       if lower(l_new_cols(i).column_name) = 'pref_type' then
         -- If "LOGGER" is changed then modify logger.pks g_logger_prefs_pref_type value
-        execute immediate q'!update logger_error_prefs set pref_type = 'LOGGER'!';
-        execute immediate q'!alter table logger_error_prefs modify pref_type not null!';
+        execute immediate q'!update loggerr_prefs set pref_type = 'LOGGER'!';
+        execute immediate q'!alter table loggerr_prefs modify pref_type not null!';
       end if;
 
     end if; -- l_count = 0
@@ -215,12 +215,12 @@ begin
   into l_count
   from user_cons_columns
   where 1=1
-    and constraint_name = 'LOGGER_ERROR_PREFS_PK'
+    and constraint_name = 'LOGGERR_PREFS_PK'
     and column_name != 'PREF_NAME';
 
   if l_count = 0 then
     -- PK only has one column, drop it and it will be rebuilt below
-    execute immediate 'alter table logger_error_prefs drop constraint logger_error_prefs_pk';
+    execute immediate 'alter table loggerr_prefs drop constraint loggerr_prefs_pk';
   end if;
 
 end;
@@ -241,21 +241,21 @@ declare
   l_count pls_integer;
   l_sql varchar2(500);
 begin
-  l_constraint.name := 'LOGGER_ERROR_PREFS_PK';
+  l_constraint.name := 'LOGGERR_PREFS_PK';
   l_constraint.condition := 'primary key (pref_type, pref_name)';
   l_constraints(l_constraints.count+1) := l_constraint;
 
-  l_constraint.name := 'LOGGER_ERROR_PREFS_CK1';
+  l_constraint.name := 'LOGGERR_PREFS_CK1';
   l_constraint.condition := 'check (pref_name = upper(pref_name))';
   l_constraints(l_constraints.count+1) := l_constraint;
 
-  l_constraint.name := 'LOGGER_ERROR_PREFS_CK2';
+  l_constraint.name := 'LOGGERR_PREFS_CK2';
   l_constraint.condition := 'check (pref_type = upper(pref_type))';
   l_constraints(l_constraints.count+1) := l_constraint;
 
 
   -- All pref names/types should be upper
-  update logger_error_prefs
+  update loggerr_prefs
   set
     pref_name = upper(pref_name),
     pref_type = upper(pref_type)
@@ -268,11 +268,11 @@ begin
     into l_count
     from user_constraints
     where 1=1
-      and table_name = 'LOGGER_ERROR_PREFS'
+      and table_name = 'LOGGERR_PREFS'
       and constraint_name = l_constraints(i).name;
 
     if l_count = 0 then
-      l_sql := 'alter table logger_error_prefs add constraint %CONSTRAINT_NAME% %CONSTRAINT_CONDITION%';
+      l_sql := 'alter table loggerr_prefs add constraint %CONSTRAINT_NAME% %CONSTRAINT_CONDITION%';
       l_sql := replace(l_sql, '%CONSTRAINT_NAME%', l_constraints(i).name);
       l_sql := replace(l_sql, '%CONSTRAINT_CONDITION%', l_constraints(i).condition);
 
@@ -283,4 +283,4 @@ begin
 end;
 /
 
-alter trigger biu_logger_error_prefs enable;
+alter trigger biu_loggerr_prefs enable;

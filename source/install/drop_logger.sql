@@ -1,44 +1,44 @@
-drop package logger_error
+drop package loggerr
 /
 
-drop procedure logger_error_configure
+drop procedure loggerr_configure
 /
 
-drop table logger_error_logs_apex_items cascade constraints
+drop table loggerr_logs_apex_items cascade constraints
 /
 
-drop table logger_error_prefs cascade constraints
+drop table loggerr_prefs cascade constraints
 /
 
-drop table logger_error_logs cascade constraints
+drop table loggerr_logs cascade constraints
 /
 
-drop table logger_error_prefs_by_client_id cascade constraints
+drop table loggerr_prefs_by_client_id cascade constraints
 /
 
-drop sequence logger_error_logs_seq
+drop sequence loggerr_logs_seq
 /
 
-drop sequence logger_error_apx_items_seq
+drop sequence loggerr_apx_items_seq
 /
 
 
 begin
-	dbms_scheduler.drop_job('LOGGER_PURGE_JOB');
+	dbms_scheduler.drop_job('LOGGERR_PURGE_JOB');
 end;
 /
 
 begin
-	dbms_scheduler.drop_job('LOGGER_UNSET_PREFS_BY_CLIENT');
+	dbms_scheduler.drop_job('LOGGERR_UNSET_PREFS_BY_CLIENT');
 end;
 /
 
-drop view logger_logs_5_min
+drop view loggerr_logs_5_min
 /
 
-drop view logger_logs_60_min
+drop view loggerr_logs_60_min
 /
 
-drop view logger_logs_terse
+drop view loggerr_logs_terse
 /
 

@@ -1,4 +1,4 @@
-create or replace procedure logger_error_configure
+create or replace procedure loggerr_configure
 is
   -- Note: The license is defined in the package specification of the logger package
 	--
@@ -21,10 +21,10 @@ is
   pragma exception_init(pls_pkg_not_exist, -06550);
 
 	l_version constant number  := dbms_db_version.version + (dbms_db_version.release / 10);
-  l_pref_value logger_error_prefs.pref_Value%type;
+  l_pref_value loggerr_prefs.pref_Value%type;
   l_logger_debug boolean;
 
-	l_pref_type_logger logger_error_prefs.pref_type%type;
+	l_pref_type_logger loggerr_prefs.pref_type%type;
 begin
 
   -- Check to see if we are in a RAC Database, 11.1 or lower.
@@ -49,7 +49,7 @@ begin
   into l_text_data_length
   from user_tab_columns
   where 1=1
-    and table_name = 'LOGGER_ERROR_LOGS'
+    and table_name = 'LOGGERR_LOGS'
     and column_name = 'TEXT';
 
   if l_text_data_length > 4000 then
@@ -95,11 +95,11 @@ begin
 	-- Since this procedure will recompile Logger, if it directly references a variable in Logger
 	-- It will lock itself while trying to recompile
 	-- Work around is to pre-store the variable using execute immediate
-	execute immediate 'begin :x := logger_error.g_pref_type_logger; end;' using out l_pref_type_logger;
+	execute immediate 'begin :x := loggerr.g_pref_type_logger; end;' using out l_pref_type_logger;
 
   select lp.pref_value
   into l_pref_value
-  from logger_error_prefs lp
+  from loggerr_prefs lp
   where 1=1
 		and lp.pref_type = upper(l_pref_type_logger)
     and lp.pref_name = 'LOGGER_DEBUG';
@@ -120,7 +120,7 @@ begin
       regexp_replace(lp.pref_name, '^PLUGIN_FN_', 'PLUGIN_') || ':' ||
       decode(nvl(upper(lp.pref_value), 'NONE'), 'NONE', 'FALSE', 'TRUE') ||
       ',' var
-    from logger_error_prefs lp
+    from loggerr_prefs lp
     where 1=1
 			and lp.pref_type = l_pref_type_logger
       and lp.pref_name like 'PLUGIN_FN%'
@@ -136,20 +136,20 @@ begin
 
 
 	-- Recompile Logger
- 	l_sql := q'!alter package logger_error compile body PLSQL_CCFLAGS='%VARIABLES%' reuse settings!';
+ 	l_sql := q'!alter package loggerr compile body PLSQL_CCFLAGS='%VARIABLES%' reuse settings!';
 	l_sql := replace(l_sql, '%VARIABLES%', l_variables);
 	execute immediate l_sql;
 
   -- #31: Dropped trigger
-	-- l_sql := q'[alter trigger BI_LOGGER_ERROR_LOGS compile PLSQL_CCFLAGS=']'||l_variables||q'[' reuse settings]';
+	-- l_sql := q'[alter trigger BI_LOGGERR_LOGS compile PLSQL_CCFLAGS=']'||l_variables||q'[' reuse settings]';
 	-- execute immediate l_sql;
 
-  -- -- TODO mdsouza: 3.1.1 org l_sql := q'!alter trigger biu_logger_error_prefs compile PLSQL_CCFLAGS='CURRENTLY_INSTALLING:FALSE'!';
+  -- -- TODO mdsouza: 3.1.1 org l_sql := q'!alter trigger biu_loggerr_prefs compile PLSQL_CCFLAGS='CURRENTLY_INSTALLING:FALSE'!';
   l_sql := q'!alter trigger biu_logger_prefs compile!';
   execute immediate l_sql;
 
   -- just in case this is a re-install / upgrade, the global contexts will persist so reset them
-  logger_error.null_global_contexts;
+  loggerr.null_global_contexts;
 
-end logger_configure;
+end loggerr_configure;
 /

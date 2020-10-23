@@ -1,6 +1,6 @@
 declare
   l_count pls_integer;
-  l_job_name user_scheduler_jobs.job_name%type := 'LOGGER_ERROR_UNSET_PREFS_BY_CLIENT';
+  l_job_name user_scheduler_jobs.job_name%type := 'LOGGERR_UNSET_PREFS_BY_CLIENT';
 begin
   
   select count(1)
@@ -12,7 +12,7 @@ begin
     dbms_scheduler.create_job(
        job_name => l_job_name,
        job_type => 'PLSQL_BLOCK',
-       job_action => 'begin logger_error.unset_client_level; end; ',
+       job_action => 'begin loggerr.unset_client_level; end; ',
        start_date => systimestamp,
        repeat_interval => 'FREQ=HOURLY; BYHOUR=1',
        enabled => TRUE,
