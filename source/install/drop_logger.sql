@@ -1,25 +1,25 @@
-drop package logger
+drop package logger_error
 /
 
-drop procedure logger_configure
+drop procedure logger_error_configure
 /
 
-drop table logger_logs_apex_items cascade constraints
+drop table logger_error_logs_apex_items cascade constraints
 /
 
-drop table logger_prefs cascade constraints
+drop table logger_error_prefs cascade constraints
 /
 
-drop table logger_logs cascade constraints
+drop table logger_error_logs cascade constraints
 /
 
-drop table logger_prefs_by_client_id cascade constraints
+drop table logger_error_prefs_by_client_id cascade constraints
 /
 
-drop sequence logger_logs_seq
+drop sequence logger_error_logs_seq
 /
 
-drop sequence logger_apx_items_seq
+drop sequence logger_error_apx_items_seq
 /
 
 
