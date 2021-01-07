@@ -24,21 +24,21 @@ prompt You will be prompted for a username, tablespace, temporary tablespace and
 prompt
 
 
-define LOGGER_USER=LOGGER_USER
-accept LOGGER_USER char default &LOGGER_USER prompt 'Name of the new logger schema to create       [&LOGGER_USER] :'
+define LOGGERR_USER=LOGGERR_USER
+accept LOGGERR_USER char default &LOGGERR_USER prompt 'Name of the new logger schema to create       [&LOGGERR_USER] :'
 
-define LOGGER_TABLESPACE=USERS
-accept LOGGER_TABLESPACE char default &LOGGER_TABLESPACE prompt 'Tablespace for the new logger schema           [&LOGGER_TABLESPACE] :'
+define LOGGERR_TABLESPACE=USERS
+accept LOGGERR_TABLESPACE char default &LOGGERR_TABLESPACE prompt 'Tablespace for the new logger schema           [&LOGGERR_TABLESPACE] :'
 
 define TEMP_TABLESPACE=TEMP
 accept TEMP_TABLESPACE char default &TEMP_TABLESPACE prompt 'Temporary Tablespace for the new logger schema  [&TEMP_TABLESPACE] :'
 
 accept PASSWD CHAR prompt 'Enter a password for the logger schema              [] :' HIDE
 
-create user &LOGGER_USER identified by &PASSWD default tablespace &LOGGER_TABLESPACE temporary tablespace &TEMP_TABLESPACE
+create user &LOGGERR_USER identified by &PASSWD default tablespace &LOGGERR_TABLESPACE temporary tablespace &TEMP_TABLESPACE
 /
 
-alter user &LOGGER_USER quota unlimited on &LOGGER_TABLESPACE 
+alter user &LOGGERR_USER quota unlimited on &LOGGERR_TABLESPACE 
 /
 
 grant connect,create view, create job, create table, create sequence, create trigger, create procedure, create any context, create synonym to LoggerDB 
@@ -46,8 +46,8 @@ grant connect,create view, create job, create table, create sequence, create tri
 
 prompt
 prompt
-prompt &LOGGER_USER user successfully created.
-prompt Important!!! Connect as the &LOGGER_USER user and run the logger_install.sql script.
+prompt &LOGGERR_USER user successfully created.
+prompt Important!!! Connect as the &LOGGERR_USER user and run the loggerr_install.sql script.
 prompt
 prompt
 

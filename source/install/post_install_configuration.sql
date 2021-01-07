@@ -14,7 +14,7 @@ begin
 
   select pref_value
   into l_current_level
-  from logger_prefs
+  from loggerr_prefs
   where 1=1
     and pref_type = loggerr.g_pref_type_logger
     and pref_name = 'LEVEL';

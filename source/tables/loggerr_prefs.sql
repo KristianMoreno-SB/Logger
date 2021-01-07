@@ -59,7 +59,7 @@ create or replace trigger biu_loggerr_prefs
   before insert or update on loggerr_prefs
   for each row
 begin
-  $if $$logger_no_op_install $then
+  $if $$loggerr_no_op_install $then
     null;
   $else
     :new.pref_name := upper(:new.pref_name);
@@ -74,7 +74,7 @@ begin
     -- #TODO:50 mdsouza: 3.1.1
     -- #TODO:100 mdsouza: if removing then decrease indent
     -- $if $$currently_installing is null or not $$currently_installing $then
-      -- Since logger.pks may not be installed when this trigger is compiled, need to move some code here
+      -- Since loggerr.pks may not be installed when this trigger is compiled, need to move some code here
       if 1=1
         and :new.pref_type = loggerr.g_pref_type_logger
         and :new.pref_name = 'LEVEL'
@@ -103,8 +103,8 @@ begin
           ,'INCLUDE_CALL_STACK'
           ,'INSTALL_SCHEMA'
           ,'LEVEL'
-          ,'LOGGER_DEBUG'
-          ,'LOGGER_VERSION'
+          ,'LOGGERR_DEBUG'
+          ,'LOGGERR_VERSION'
           ,'PLUGIN_FN_ERROR'
           ,'PREF_BY_CLIENT_ID_EXPIRE_HOURS'
           ,'PROTECT_ADMIN_PROCS'
@@ -115,11 +115,11 @@ begin
         raise_application_error (-20000, 'La asignación de las preferencias del sistemas se encuentran restringidas a una lista predefinida.');
       end if;
 
-      -- this is because the logger package is not installed yet.  We enable it in logger_configure
+      -- this is because the logger package is not installed yet.  We enable it in loggerr_configure
       loggerr.null_global_contexts;
     -- #TODO:60 mdsouza: 3.1.1
     -- $end
-  $end -- $$logger_no_op_install
+  $end -- $$loggerr_no_op_install
 end;
 /
 
@@ -127,7 +127,7 @@ alter trigger biu_loggerr_prefs disable;
 
 declare
 begin
-  $if $$logger_no_op_install $then
+  $if $$loggerr_no_op_install $then
     null;
   $else
     -- Configure Data
@@ -135,7 +135,7 @@ begin
     using (
       select 'PURGE_AFTER_DAYS' pref_name, '7' pref_value from dual union
       select 'PURGE_MIN_LEVEL' pref_name, 'DEBUG' pref_value from dual union
-      select 'LOGGER_VERSION' pref_name, 'x.x.x' pref_value from dual union -- x.x.x will be replaced when running the build script
+      select 'LOGGERR_VERSION' pref_name, 'x.x.x' pref_value from dual union -- x.x.x will be replaced when running the build script
       select 'LEVEL' pref_name, 'DEBUG' pref_value from dual union
       select 'PROTECT_ADMIN_PROCS' pref_name, 'TRUE' pref_value from dual union
       select 'INCLUDE_CALL_STACK' pref_name, 'TRUE' pref_value from dual union
@@ -144,14 +144,14 @@ begin
       -- #46
       select 'PLUGIN_FN_ERROR' pref_name, 'NONE' pref_value from dual union
       -- #64
-      select 'LOGGER_DEBUG' pref_name, 'FALSE' pref_value from dual
+      select 'LOGGERR_DEBUG' pref_name, 'FALSE' pref_value from dual
       ) d
       on (p.pref_name = d.pref_name)
     when matched then
       update set p.pref_value =
         case
-          -- Only LOGGER_VERSION should be updated during an update
-          when p.pref_name = 'LOGGER_VERSION' then d.pref_value
+          -- Only LOGGERR_VERSION should be updated during an update
+          when p.pref_name = 'LOGGERR_VERSION' then d.pref_value
           else p.pref_value
         end
     when not matched then
@@ -195,7 +195,7 @@ begin
 
       -- #127
       if lower(l_new_cols(i).column_name) = 'pref_type' then
-        -- If "LOGGER" is changed then modify logger.pks g_logger_prefs_pref_type value
+        -- If "LOGGER" is changed then modify loggerr.pks g_loggerr_prefs_pref_type value
         execute immediate q'!update loggerr_prefs set pref_type = 'LOGGER'!';
         execute immediate q'!alter table loggerr_prefs modify pref_type not null!';
       end if;

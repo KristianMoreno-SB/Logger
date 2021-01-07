@@ -41,8 +41,8 @@ cd $START_DIR
 
 #*** VARIABLES ***
 RELEASE_FOLDER=../releases/$VERSION_NUMBER
-INSTALL=$RELEASE_FOLDER/"logger_error_install.sql"
-NO_OP=$RELEASE_FOLDER/"logger_error_no_op.sql"
+INSTALL=$RELEASE_FOLDER/"loggerr_install.sql"
+NO_OP=$RELEASE_FOLDER/"loggerr_no_op.sql"
 
 
 #Clear release folder (if it exists) and make directory
@@ -52,12 +52,12 @@ mkdir ../releases/$VERSION_NUMBER
 
 #Build files
 
-#rm -f ../build/logger_install.sql
-#rm -f ../build/logger_latest.zip
-#rm -f ../build/logger_no_op.sql
+#rm -f ../build/loggerr_install.sql
+#rm -f ../build/loggerr_latest.zip
+#rm -f ../build/loggerr_no_op.sql
 
 #PREINSTALL
-cat ../source/install/logger_error_install_prereqs.sql > $INSTALL
+cat ../source/install/loggerr_install_prereqs.sql > $INSTALL
 printf '\n' >> $INSTALL
 
 #NO OP Code
@@ -66,65 +66,65 @@ printf "\x2d\x2d but does not actually write to any tables. Additionally, it has
 printf "\x2d\x2d You can review the documentation at https://github.com/OraOpenSource/Logger for more information.\n" >> $NO_OP
 printf '\n' >> $NO_OP
 #Seeting compilation flag so that tables are just skeletons (no triggers, sequences, etc)
-printf "alter session set plsql_ccflags='logger_no_op_install:true' \n/ \n\n\n" >> $NO_OP
+printf "alter session set plsql_ccflags='loggerr_no_op_install:true' \n/ \n\n\n" >> $NO_OP
 
 
 
 #78: Need to build tables for no_op to reference
 #TABLES - Output for both regular and NO_OP
-printf 'PROMPT tables/logger_error_logs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_error_logs.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/loggerr_logs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/loggerr_logs.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_error_prefs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_error_prefs.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/loggerr_prefs.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/loggerr_prefs.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_error_logs_apex_items.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_error_logs_apex_items.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/loggerr_logs_apex_items.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/loggerr_logs_apex_items.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT tables/logger_error_prefs_by_client_id.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/tables/logger_error_prefs_by_client_id.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT tables/loggerr_prefs_by_client_id.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/tables/loggerr_prefs_by_client_id.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #JOBS
-printf 'PROMPT jobs/logger_error_purge_job.sql \n' >> $INSTALL
-cat ../source/jobs/logger_error_purge_job.sql >> $INSTALL
+printf 'PROMPT jobs/loggerr_purge_job.sql \n' >> $INSTALL
+cat ../source/jobs/loggerr_purge_job.sql >> $INSTALL
 printf '\n' >> $INSTALL
-printf 'PROMPT jobs/logger_error_unset_prefs_by_client.sql \n' >> $INSTALL
-cat ../source/jobs/logger_error_unset_prefs_by_client.sql >> $INSTALL
+printf 'PROMPT jobs/loggerr_unset_prefs_by_client.sql \n' >> $INSTALL
+cat ../source/jobs/loggerr_unset_prefs_by_client.sql >> $INSTALL
 printf '\n' >> $INSTALL
 
 #VIEWS - Output for both regular and NO_OP
-printf 'PROMPT views/logger_error_logs_5_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_error_logs_5_min.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/loggerr_logs_5_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/loggerr_logs_5_min.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT views/logger_error_logs_60_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_error_logs_60_min.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/loggerr_logs_60_min.sql \n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/loggerr_logs_60_min.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
-printf 'PROMPT views/logger_error_logs_terse.sql\n' | tee -a $INSTALL $NO_OP > /dev/null
-cat ../source/views/logger_error_logs_terse.sql | tee -a $INSTALL $NO_OP > /dev/null
+printf 'PROMPT views/loggerr_logs_terse.sql\n' | tee -a $INSTALL $NO_OP > /dev/null
+cat ../source/views/loggerr_logs_terse.sql | tee -a $INSTALL $NO_OP > /dev/null
 printf '\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #PACKAGES
-printf 'PROMPT packages/logger_error.pks \n' >> $INSTALL
-cat ../source/packages/logger_error.pks >> $INSTALL
+printf 'PROMPT packages/loggerr.pks \n' >> $INSTALL
+cat ../source/packages/loggerr.pks >> $INSTALL
 printf '\n' >> $INSTALL
-printf 'PROMPT packages/logger_error.pkb \n' >> $INSTALL
-cat ../source/packages/logger_error.pkb >> $INSTALL
+printf 'PROMPT packages/loggerr.pkb \n' >> $INSTALL
+cat ../source/packages/loggerr.pkb >> $INSTALL
 printf '\n' >> $INSTALL
 
 
-#Recompile logger_prefs trigger as it has dependencies on logger.pks
-printf 'PROMPT Recompile biu_logger_prefs after logger.pkb \n' >> $INSTALL
-printf '\nalter trigger biu_logger_prefs compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
+#Recompile loggerr_prefs trigger as it has dependencies on loggerr.pks
+printf 'PROMPT Recompile biu_loggerr_prefs after loggerr.pkb \n' >> $INSTALL
+printf '\nalter trigger biu_loggerr_prefs compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #CONTEXTS
-printf 'PROMPT contexts/logger_error_context.sql \n' >> $INSTALL
-cat ../source/contexts/logger_error_context.sql >> $INSTALL
+printf 'PROMPT contexts/loggerr_context.sql \n' >> $INSTALL
+cat ../source/contexts/loggerr_context.sql >> $INSTALL
 printf '\n' >> $INSTALL
 
 #PROCEDURES
-printf 'PROMPT procedures/logger_error_configure.plb \n' >> $INSTALL
-cat ../source/procedures/logger_error_configure.plb >> $INSTALL
+printf 'PROMPT procedures/loggerr_configure.plb \n' >> $INSTALL
+cat ../source/procedures/loggerr_configure.plb >> $INSTALL
 printf '\n' >> $INSTALL
 
 
@@ -136,32 +136,32 @@ printf '\n' >> $INSTALL
 
 
 #NO OP Code
-printf '\n\nprompt *** logger_error.pks *** \n\n' >> $NO_OP
-cat ../source/packages/logger_error.pks >> $NO_OP
-printf '\n\nprompt *** logger_error.pkb *** \n\n' >> $NO_OP
-cat ../source/packages/logger_error_no_op.pkb >> $NO_OP
+printf '\n\nprompt *** loggerr.pks *** \n\n' >> $NO_OP
+cat ../source/packages/loggerr.pks >> $NO_OP
+printf '\n\nprompt *** loggerr.pkb *** \n\n' >> $NO_OP
+cat ../source/packages/loggerr_no_op.pkb >> $NO_OP
 printf '\n\nprompt\n' >> $NO_OP
 printf 'prompt *************************************************\n' >> $NO_OP
-printf 'prompt Now executing LOGGER_ERROR.STATUS...\n' >> $NO_OP
+printf 'prompt Now executing LOGGERR.STATUS...\n' >> $NO_OP
 printf 'prompt ' >> $NO_OP
-printf '\nbegin \n\tlogger_error.status; \nend;\n/\n\n' >> $NO_OP
+printf '\nbegin \n\tloggerr.status; \nend;\n/\n\n' >> $NO_OP
 printf 'prompt *************************************************\n' >> $NO_OP
 printf '\n\n' >> $NO_OP
 
 
 
-#Recompile logger_logs_terse since it depends on logger
-printf '\nalter view logger_error_logs_terse compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
+#Recompile loggerr_logs_terse since it depends on logger
+printf '\nalter view loggerr_logs_terse compile;\n' | tee -a $INSTALL $NO_OP > /dev/null
 
 #Copy "other" scripts
 cp -f ../source/install/create_user.sql $RELEASE_FOLDER
-cp -f ../source/install/drop_logger.sql $RELEASE_FOLDER
+cp -f ../source/install/drop_loggerr.sql $RELEASE_FOLDER
 
 #Copy Scripts
 cp -r ../source/scripts $RELEASE_FOLDER
 
 #Copy main package file for developers to easily review
-cp -f ../source/packages/logger_error.* $RELEASE_FOLDER
+cp -f ../source/packages/loggerr.* $RELEASE_FOLDER
 
 #Copy README
 cp -f ../README.md $RELEASE_FOLDER
@@ -180,20 +180,20 @@ chmod 777 $RELEASE_FOLDER/*.*
 
 
 #Replace any references for the version number
-sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger_error_install.sql
-sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/logger_error.pks
+sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/loggerr_install.sql
+sed -i.del "s/x\.x\.x/$VERSION_NUMBER/g" $RELEASE_FOLDER/loggerr.pks
 #need to remove the backup file required for sed call
 rm -rf $RELEASE_FOLDER/*.del
 
 
 
-#Old windows zip7za a -tzip $/logger_$VERSION_NUMBER.zip ../build/*.sql ../build/*.html
+#Old windows zip7za a -tzip $/loggerr_$VERSION_NUMBER.zip ../build/*.sql ../build/*.html
 #By CDing into the release_folder we don't get the full path in the zip file
 cd $RELEASE_FOLDER
-zip -r logger_error_$VERSION_NUMBER.zip .
+zip -r loggerr_$VERSION_NUMBER.zip .
 
 #91: Copy zip to release root
-cp -f logger_error_$VERSION_NUMBER.zip ../.
+cp -f loggerr_$VERSION_NUMBER.zip ../.
 
 #Remove release folder if appliable
 if [ "$INCLUDE_RELEASE_FOLDER" != "Y" ]; then

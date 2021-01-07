@@ -23,13 +23,13 @@ create table loggerr_logs_apex_items(
     item_name       varchar2(1000) not null,
     item_value      clob,
     constraint loggerr_logs_apx_itms_pk primary key (id) enable,
-    constraint loggerr_logs_apx_itms_fk foreign key (log_id) references loggerr_error_logs(id) ON DELETE CASCADE
+    constraint loggerr_logs_apx_itms_fk foreign key (log_id) references loggerr_logs(id) ON DELETE CASCADE
 )
     ';
   end if;
 
 
-  $if $$logger_no_op_install $then
+  $if $$loggerr_no_op_install $then
     null;
   $else
     -- SEQUENCE
@@ -58,7 +58,7 @@ create table loggerr_logs_apex_items(
     if l_count = 0 then
       execute immediate 'create index loggerr_apex_items_idx1 on loggerr_logs_apex_items(log_id)';
     end if;
-  $end -- $$logger_no_op_install
+  $end -- $$loggerr_no_op_install
 end;
 /
 
@@ -67,7 +67,7 @@ create or replace trigger biu_loggerr_apex_items
   before insert or update on loggerr_logs_apex_items
 for each row
 begin
-  $if $$logger_no_op_install $then
+  $if $$loggerr_no_op_install $then
     null;
   $else
     :new.id := loggerr_apx_items_seq.nextval;

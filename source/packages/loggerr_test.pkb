@@ -15,7 +15,7 @@ as
   procedure util_add_error(
     p_error in varchar2)
   as
-    l_err logger_test.rec_error;
+    l_err loggerr_test.rec_error;
   begin
     l_err.proc_name := g_proc_name;
     l_err.error := p_error;
@@ -41,14 +41,14 @@ as
   begin
     -- Drop table if it still exists
     begin
-      execute immediate 'drop table logger_prefs_tmp';
+      execute immediate 'drop table loggerr_prefs_tmp';
     exception
       when table_does_not_exist then
         null;
     end;
 
-    -- Create temp logger_prefs table
-    execute immediate 'create table logger_prefs_tmp as select * from logger_prefs';
+    -- Create temp loggerr_prefs table
+    execute immediate 'create table loggerr_prefs_tmp as select * from loggerr_prefs';
 
     -- Reset client_id
     dbms_session.set_identifier(null);
@@ -77,20 +77,20 @@ as
   as
     l_count pls_integer;
   begin
-    -- Make sure logger_prefs_tmp table exists
+    -- Make sure loggerr_prefs_tmp table exists
     select count(1)
     into l_count
     from user_tables
-    where table_name = 'LOGGER_PREFS_TMP';
+    where table_name = 'LOGGERR_PREFS_TMP';
 
     if l_count = 1 then
 
-      delete from logger_prefs;
+      delete from loggerr_prefs;
 
-      -- Need to do an execute immediate here since logger_prefs_tmp doesn't always exist
-      execute immediate 'insert into logger_prefs select * from logger_prefs_tmp';
+      -- Need to do an execute immediate here since loggerr_prefs_tmp doesn't always exist
+      execute immediate 'insert into loggerr_prefs select * from loggerr_prefs_tmp';
 
-      execute immediate 'drop table logger_prefs_tmp';
+      execute immediate 'drop table loggerr_prefs_tmp';
     end if;
 
     dbms_session.set_identifier(null);
@@ -142,7 +142,7 @@ as
    *
    * Notes:
    *  - This is useful when trying to back reference which log was just inserted
-   *  - Should look in logger_logs_5_mins since recent
+   *  - Should look in loggerr_logs_5_mins since recent
    *
    * Related Tickets:
    *  -
@@ -154,7 +154,7 @@ as
     return varchar2
   as
   begin
-    return lower('logger_test_' || dbms_random.string('x',20));
+    return lower('loggerr_test_' || dbms_random.string('x',20));
   end util_get_unique_scope;
 
   -- *** TESTS ***
@@ -252,8 +252,8 @@ as
 
   procedure set_extra_with_params
   as
-    l_clob logger_logs.extra%type;
-    l_return logger_logs.extra%type;
+    l_clob loggerr_logs.extra%type;
+    l_return loggerr_logs.extra%type;
     l_params loggerr.tab_param;
   begin
     g_proc_name := 'set_extra_with_params';
@@ -327,7 +327,7 @@ p_test2: test2' then
     g_proc_name := 'admin_security_check';
 
     -- Test simple case
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'FALSE'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -340,13 +340,13 @@ p_test2: test2' then
     end if;
 
     -- Test when install schema is same as current schema. This should still pass
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'TRUE'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
       and pref_name = 'PROTECT_ADMIN_PROCS';
 
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = sys_context('USERENV','SESSION_USER')
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -359,7 +359,7 @@ p_test2: test2' then
     end if;
 
     -- Test when install schema is different as current schema (still set to TRUE)
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'DUMMY'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -387,7 +387,7 @@ p_test2: test2' then
   begin
     g_proc_name := 'get_level_number';
 
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'DEBUG'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -418,7 +418,7 @@ p_test2: test2' then
   begin
     g_proc_name := 'include_call_stack';
 
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'TRUE'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -428,7 +428,7 @@ p_test2: test2' then
       util_add_error('Faling on true');
     end if;
 
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'FALSE'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -536,8 +536,8 @@ p_test2: test2' then
   procedure log_internal
   as
     l_params loggerr.tab_param;
-    l_scope logger_logs.scope%type;
-    l_row logger_logs_5_min%rowtype;
+    l_scope loggerr_logs.scope%type;
+    l_row loggerr_logs_5_min%rowtype;
 
   begin
     g_proc_name := 'log_internal';
@@ -559,7 +559,7 @@ p_test2: test2' then
 
     select *
     into l_row
-    from logger_logs_5_min
+    from loggerr_logs_5_min
     where 1=1
       and scope = l_scope;
 
@@ -567,7 +567,7 @@ p_test2: test2' then
       util_add_error('text failed');
     end if;
 
-    if l_row.logger_level != loggerr.g_debug then
+    if l_row.loggerr_level != loggerr.g_debug then
       util_add_error('Level failed');
     end if;
 
@@ -719,9 +719,9 @@ new line',
 
   procedure log_error
   as
-    l_scope logger_logs.scope%type := util_get_unique_scope;
+    l_scope loggerr_logs.scope%type := util_get_unique_scope;
     l_count pls_integer;
-    l_row logger_logs_5_min%rowtype;
+    l_row loggerr_logs_5_min%rowtype;
   begin
     g_proc_name := 'log_error';
 
@@ -731,7 +731,7 @@ new line',
 
     select count(1)
     into l_count
-    from logger_logs_5_min
+    from loggerr_logs_5_min
     where 1=1
       and scope = l_scope;
 
@@ -744,7 +744,7 @@ new line',
     loggerr.log_error('test', l_scope);
 
     -- Reset callstack context and set pref to false to ensure that callstack is still set even though this setting is false
-    update logger_prefs
+    update loggerr_prefs
     set pref_value = 'FALSE'
     where 1=1
       and pref_type = loggerr.g_pref_type_logger
@@ -758,7 +758,7 @@ new line',
     begin
       select *
       into l_row
-      from logger_logs_5_min
+      from loggerr_logs_5_min
       where 1=1
         and scope = l_scope;
 
@@ -786,7 +786,7 @@ new line',
 
     l_log_fns tab_log_fn;
 
-    l_scope logger_logs.scope%type;
+    l_scope loggerr_logs.scope%type;
     l_count pls_integer;
     l_sql varchar2(255);
 
@@ -842,7 +842,7 @@ new line',
 
         select count(1)
         into l_count
-        from logger_logs_5_min
+        from loggerr_logs_5_min
         where 1=1
           and scope = l_scope;
 
@@ -870,8 +870,8 @@ new line',
 
   procedure time_start
   as
-    l_unit_name logger_logs.unit_name%type := util_get_unique_scope;
-    l_text logger_logs.text%type;
+    l_unit_name loggerr_logs.unit_name%type := util_get_unique_scope;
+    l_text loggerr_logs.text%type;
   begin
     g_proc_name := 'time_start';
 
@@ -884,7 +884,7 @@ new line',
 
     select max(text)
     into l_text
-    from logger_logs_5_min
+    from loggerr_logs_5_min
     where 1=1
       and unit_name = upper(l_unit_name);
 
@@ -897,9 +897,9 @@ new line',
 
   procedure time_stop
   as
-    l_unit_name logger_logs.unit_name%type := util_get_unique_scope;
-    l_scope logger_logs.scope%type := util_get_unique_scope;
-    l_text logger_logs.text%type;
+    l_unit_name loggerr_logs.unit_name%type := util_get_unique_scope;
+    l_scope loggerr_logs.scope%type := util_get_unique_scope;
+    l_text loggerr_logs.text%type;
     l_sleep_time number := 1;
   begin
     g_proc_name := 'time_stop';
@@ -920,7 +920,7 @@ new line',
 
     select max(text)
     into l_text
-    from logger_logs_5_min
+    from loggerr_logs_5_min
     where 1=1
       and scope = l_scope;
 
@@ -934,7 +934,7 @@ new line',
 
   procedure time_stop_fn
   as
-    l_unit_name logger_logs.unit_name%type := util_get_unique_scope;
+    l_unit_name loggerr_logs.unit_name%type := util_get_unique_scope;
     l_sleep_time number := 2;
     l_text varchar2(50);
   begin
@@ -960,7 +960,7 @@ new line',
 
   procedure time_stop_seconds
   as
-    l_unit_name logger_logs.unit_name%type := util_get_unique_scope;
+    l_unit_name loggerr_logs.unit_name%type := util_get_unique_scope;
     l_sleep_time number := 2;
     l_text varchar2(50);
   begin
@@ -988,7 +988,7 @@ new line',
 
   procedure get_pref
   as
-    l_pref logger_prefs.pref_value%type;
+    l_pref loggerr_prefs.pref_value%type;
   begin
     g_proc_name := 'get_pref';
 
@@ -1025,9 +1025,9 @@ new line',
 
     select count(1)
     into l_count
-    from logger_logs
+    from loggerr_logs
     where 1=1
-      and logger_level > loggerr.g_permanent;
+      and loggerr_level > loggerr.g_permanent;
 
     if l_count > 0 then
       util_add_error('Non permanent records being kept.');
@@ -1039,9 +1039,9 @@ new line',
 
   procedure set_level
   as
-    l_scope logger_logs.scope%type;
+    l_scope loggerr_logs.scope%type;
     l_count pls_integer;
-    l_call_stack logger_logs.call_stack%type;
+    l_call_stack loggerr_logs.call_stack%type;
 
     procedure log_and_count
     as
@@ -1051,7 +1051,7 @@ new line',
 
       select count(1)
       into l_count
-      from logger_logs_5_min
+      from loggerr_logs_5_min
       where scope = l_scope;
     end log_and_count;
 
@@ -1090,7 +1090,7 @@ new line',
       -- Test callstack
       select call_stack
       into l_call_stack
-      from logger_logs_5_min
+      from loggerr_logs_5_min
       where scope = l_scope;
 
       if l_call_stack is null then
@@ -1110,7 +1110,7 @@ new line',
       -- Test callstack
       select call_stack
       into l_call_stack
-      from logger_logs_5_min
+      from loggerr_logs_5_min
       where scope = l_scope;
 
       if l_call_stack is not null then
@@ -1205,7 +1205,7 @@ new line',
     end if;
   end append_param;
 
-  -- TODO: ins_logger_logs (to test post functions)
+  -- TODO: ins_loggerr_logs (to test post functions)
 
   -- TODO: get_fmt_msg are we adding it in here?
 
@@ -1223,7 +1223,7 @@ new line',
    */
   procedure util_run_tests
   as
-    l_error_null logger_test.tab_error;
+    l_error_null loggerr_test.tab_error;
   begin
     -- Reset error array
     g_errors := l_error_null;

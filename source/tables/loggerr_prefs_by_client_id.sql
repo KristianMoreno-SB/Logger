@@ -18,12 +18,12 @@ begin
     execute immediate q'!
 create table loggerr_prefs_by_client_id(
   client_id varchar2(64) not null,
-  logger_level varchar2(20) not null,
+  loggerr_level varchar2(20) not null,
   include_call_stack varchar2(5) not null,
   created_date date default sysdate not null,
   expiry_date date not null,
   constraint loggerr_prefs_by_client_id_pk primary key (client_id) enable,
-  constraint loggerr_prefs_by_client_id_ck1 check (logger_level in ('OFF','PERMANENT','ERROR','WARNING','INFORMATION','DEBUG','TIMING')),
+  constraint loggerr_prefs_by_client_id_ck1 check (loggerr_level in ('OFF','PERMANENT','ERROR','WARNING','INFORMATION','DEBUG','TIMING')),
   constraint loggerr_prefs_by_client_id_ck2 check (expiry_date >= created_date),
   constraint loggerr_prefs_by_client_id_ck3 check (include_call_stack in ('TRUE', 'FALSE'))
 )
@@ -31,22 +31,22 @@ create table loggerr_prefs_by_client_id(
   end if;
 
   -- COMMENTS
-  execute immediate q'!comment on table loggerr_prefs_by_client_id is 'Client specific logger levels. Only active client_ids/logger_levels will be maintained in this table'!';
+  execute immediate q'!comment on table loggerr_prefs_by_client_id is 'Client specific logger levels. Only active client_ids/loggerr_levels will be maintained in this table'!';
   execute immediate q'!comment on column loggerr_prefs_by_client_id.client_id is 'Client identifier'!';
-  execute immediate q'!comment on column loggerr_prefs_by_client_id.logger_level is 'Logger level. Debe ser OFF, PERMANENT, ERROR, WARNING, INFORMATION, DEBUG, TIMING'!';
+  execute immediate q'!comment on column loggerr_prefs_by_client_id.loggerr_level is 'Logger level. Debe ser OFF, PERMANENT, ERROR, WARNING, INFORMATION, DEBUG, TIMING'!';
   execute immediate q'!comment on column loggerr_prefs_by_client_id.include_call_stack is 'Include call stack in logging'!';
   execute immediate q'!comment on column loggerr_prefs_by_client_id.created_date is 'Date that entry was created on'!';
-  execute immediate q'!comment on column loggerr_prefs_by_client_id.expiry_date is 'After the given expiry date the logger_level will be disabled for the specific client_id. Unless sepcifically removed from this table a job will clean up old entries'!';
+  execute immediate q'!comment on column loggerr_prefs_by_client_id.expiry_date is 'After the given expiry date the loggerr_level will be disabled for the specific client_id. Unless sepcifically removed from this table a job will clean up old entries'!';
 
 
   -- 92: Missing APEX and SYS_CONTEXT support
-  l_sql := 'alter table loggerr_prefs_by_client_id drop constraint logger_prefs_by_client_id_ck1';
+  l_sql := 'alter table loggerr_prefs_by_client_id drop constraint loggerr_prefs_by_client_id_ck1';
   execute immediate l_sql;
 
   -- Rebuild constraint
   l_sql := q'!alter table loggerr_prefs_by_client_id
     add constraint loggerr_prefs_by_client_id_ck1
-    check (logger_level in ('OFF','PERMANENT','ERROR','WARNING','INFORMATION','DEBUG','TIMING', 'APEX', 'SYS_CONTEXT'))!';
+    check (loggerr_level in ('OFF','PERMANENT','ERROR','WARNING','INFORMATION','DEBUG','TIMING', 'APEX', 'SYS_CONTEXT'))!';
   execute immediate l_sql;
 
 end;

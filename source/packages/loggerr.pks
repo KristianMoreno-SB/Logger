@@ -35,12 +35,12 @@ as
 
   type rec_loggerr_log is record(
     id loggerr_logs.id%type,
-    logger_level loggerr_logs.logger_level%type
+    loggerr_level loggerr_logs.loggerr_level%type
   );
 
 
   -- VARIABLES
-	g_logger_version constant varchar2(10) := 'x.x.x'; -- Don't change this. Build script will replace with right version number
+	g_loggerr_version constant varchar2(10) := 'x.x.x'; -- Don't change this. Build script will replace with right version number
 	g_context_name constant varchar2(35) := substr(sys_context('USERENV','CURRENT_SCHEMA'),1,23)||'_LOGCTX';
 
   g_off constant number := 0;
@@ -74,10 +74,10 @@ as
 
   -- #127
   -- Note to developers: This is only for internal Logger code. Do not use this as part of your code.
-  g_pref_type_logger constant logger_prefs.pref_type%type := 'LOGGERR'; -- If this changes need to modify logger_prefs.sql as it has a dependancy.
+  g_pref_type_logger constant loggerr_prefs.pref_type%type := 'LOGGERR'; -- If this changes need to modify loggerr_prefs.sql as it has a dependancy.
 
   -- Expose private functions only for testing during development
-  $if $$logger_debug $then
+  $if $$loggerr_debug $then
     function is_number(p_str in varchar2)
       return boolean;
 
@@ -197,25 +197,25 @@ as
     p_detail_level in varchar2 default 'USER',-- ALL, NLS, USER, INSTANCE,
     p_show_null in boolean default false,
     p_scope in loggerr_logs.scope%type default null,
-    p_level in loggerr_logs.logger_level%type default null);
+    p_level in loggerr_logs.loggerr_level%type default null);
 
   procedure log_cgi_env(
     p_show_null in boolean default false,
     p_scope in loggerr_logs.scope%type default null,
-    p_level in loggerr_logs.logger_level%type default null);
+    p_level in loggerr_logs.loggerr_level%type default null);
 
   procedure log_character_codes(
     p_text in varchar2,
     p_scope in loggerr_logs.scope%type default null,
     p_show_common_codes in boolean default true,
-    p_level in loggerr_logs.logger_level%type default null);
+    p_level in loggerr_logs.loggerr_level%type default null);
 
     procedure log_apex_items(
       p_text in varchar2 default 'Log APEX Items',
       p_scope in loggerr_logs.scope%type default null,
       p_item_type in varchar2 default loggerr.g_apex_item_type_all,
       p_log_null_items in boolean default true,
-      p_level in loggerr_logs.logger_level%type default null);
+      p_level in loggerr_logs.loggerr_level%type default null);
 
 	procedure time_start(
 		p_unit in varchar2,
@@ -240,8 +240,8 @@ as
   procedure time_reset;
 
   function get_pref(
-    p_pref_name in logger_prefs.pref_name%type,
-    p_pref_type in logger_prefs.pref_type%type default loggerr.g_pref_type_logger)
+    p_pref_name in loggerr_prefs.pref_name%type,
+    p_pref_type in loggerr_prefs.pref_type%type default loggerr.g_pref_type_logger)
     return varchar2
     $if not dbms_db_version.ver_le_10_2  $then
       result_cache
@@ -249,14 +249,14 @@ as
 
   -- #103
   procedure set_pref(
-    p_pref_type in logger_prefs.pref_type%type,
-    p_pref_name in logger_prefs.pref_name%type,
-    p_pref_value in logger_prefs.pref_value%type);
+    p_pref_type in loggerr_prefs.pref_type%type,
+    p_pref_name in loggerr_prefs.pref_name%type,
+    p_pref_value in loggerr_prefs.pref_value%type);
 
   -- #103
   procedure del_pref(
-    p_pref_type in logger_prefs.pref_type%type,
-    p_pref_name in logger_prefs.pref_name%type);
+    p_pref_type in loggerr_prefs.pref_type%type,
+    p_pref_name in loggerr_prefs.pref_name%type);
 
 	procedure purge(
 		p_purge_after_days in varchar2 default null,
@@ -353,7 +353,7 @@ as
     return varchar2;
 
   procedure ins_loggerr_logs(
-    p_logger_level in loggerr_logs.logger_level%type,
+    p_loggerr_level in loggerr_logs.loggerr_level%type,
     p_text in varchar2 default null, -- Not using type since want to be able to pass in 32767 characters
     p_scope in loggerr_logs.scope%type default null,
     p_call_stack in loggerr_logs.call_stack%type default null,
@@ -379,7 +379,7 @@ as
     return varchar2;
 
   function get_plugin_rec(
-    p_logger_level in loggerr_logs.logger_level%type)
+    p_loggerr_level in loggerr_logs.loggerr_level%type)
     return loggerr.rec_loggerr_log;
 end loggerr;
 /

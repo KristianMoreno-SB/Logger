@@ -22,7 +22,7 @@ is
 
 	l_version constant number  := dbms_db_version.version + (dbms_db_version.release / 10);
   l_pref_value loggerr_prefs.pref_Value%type;
-  l_logger_debug boolean;
+  l_loggerr_debug boolean;
 
 	l_pref_type_logger loggerr_prefs.pref_type%type;
 begin
@@ -102,12 +102,12 @@ begin
   from loggerr_prefs lp
   where 1=1
 		and lp.pref_type = upper(l_pref_type_logger)
-    and lp.pref_name = 'LOGGER_DEBUG';
-  l_variables := l_variables || 'LOGGER_DEBUG:' || l_pref_value||',';
+    and lp.pref_name = 'LOGGERR_DEBUG';
+  l_variables := l_variables || 'LOGGERR_DEBUG:' || l_pref_value||',';
 
-  l_logger_debug := false;
+  l_loggerr_debug := false;
   if upper(l_pref_value) = 'TRUE' then
-    l_logger_debug := true;
+    l_loggerr_debug := true;
   end if;
 
 
@@ -116,7 +116,7 @@ begin
 -- Set for each plugin type
   for x in (
     select
-      'LOGGER_' ||
+      'LOGGERR_' ||
       regexp_replace(lp.pref_name, '^PLUGIN_FN_', 'PLUGIN_') || ':' ||
       decode(nvl(upper(lp.pref_value), 'NONE'), 'NONE', 'FALSE', 'TRUE') ||
       ',' var
@@ -130,7 +130,7 @@ begin
 
 
   l_variables := rtrim(l_variables,',');
-  if l_logger_debug then
+  if l_loggerr_debug then
     dbms_output.put_line('l_variables: ' || l_variables);
   end if;
 
@@ -145,7 +145,7 @@ begin
 	-- execute immediate l_sql;
 
   -- -- TODO mdsouza: 3.1.1 org l_sql := q'!alter trigger biu_loggerr_prefs compile PLSQL_CCFLAGS='CURRENTLY_INSTALLING:FALSE'!';
-  l_sql := q'!alter trigger biu_logger_prefs compile!';
+  l_sql := q'!alter trigger biu_loggerr_prefs compile!';
   execute immediate l_sql;
 
   -- just in case this is a re-install / upgrade, the global contexts will persist so reset them

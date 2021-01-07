@@ -1,7 +1,7 @@
 set termout off
--- setting termout off as this view will install with an error as it depends on logger.date_text_format
+-- setting termout off as this view will install with an error as it depends on loggerr.date_text_format
 create or replace force view loggerr_logs_terse as
- select id, logger_level, 
+ select id, loggerr_level, 
         substr(loggerr.date_text_format(time_stamp),1,20) time_ago,
         substr(text,1,200) text
    from loggerr_logs

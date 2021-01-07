@@ -26,7 +26,7 @@ begin
     execute immediate '
 create table loggerr_logs(
   id number,
-  logger_level number,
+  loggerr_level number,
   text varchar2(4000),
   time_stamp timestamp,
   scope varchar2(1000),
@@ -40,13 +40,13 @@ create table loggerr_logs(
   scn number,
   extra clob,
   constraint loggerr_logs_pk primary key (id) enable,
-  constraint loggerr_logs_lvl_ck check(logger_level in (1,2,4,8,16,32,64,128))
+  constraint loggerr_logs_lvl_ck check(loggerr_level in (1,2,4,8,16,32,64,128))
 )
     ';
   end if;
 
   -- 2.0.0
-  l_required_columns(l_required_columns.count+1) := 'LOGGER_LEVEL';
+  l_required_columns(l_required_columns.count+1) := 'LOGGERR_LEVEL';
   l_required_columns(l_required_columns.count+1) := 'TIME_STAMP';
 
   for i in l_required_columns.first .. l_required_columns.last loop
@@ -90,7 +90,7 @@ create table loggerr_logs(
   end loop;
 
 
-  $if $$logger_no_op_install $then
+  $if $$loggerr_no_op_install $then
     null;
   $else
     -- SEQUENCE
@@ -117,7 +117,7 @@ create table loggerr_logs(
     where index_name = 'LOGGERR_LOGS_IDX1';
 
     if l_count = 0 then
-      execute immediate 'create index loggerr_logs_idx1 on loggerr_logs(time_stamp,logger_level)';
+      execute immediate 'create index loggerr_logs_idx1 on loggerr_logs(time_stamp,loggerr_level)';
     end if;
   $end
 
